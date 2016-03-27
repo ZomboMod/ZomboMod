@@ -117,6 +117,16 @@ namespace ZomboMod
             Server.Password = Settings.Server.Password;
             Server.Timeout = Settings.Server.Timeout;
 
+            // TODO LOGGER
+            Console.WriteLine( "Pvp: {0}", Server.IsPvp ? "Enabled" : "Disabled" );
+            Console.WriteLine( "GameMode: {0}", Server.GameMode );
+            Console.WriteLine( "CameraMode: {0}", Server.CameraMode );
+            Console.WriteLine( "SecurityMode: {0}", Server.SecurityMode );
+            Console.WriteLine( "MaxPlayers: {0}", Server.MaxPlayers );
+            Console.WriteLine( "Name: {0}", Server.Name );
+            Console.WriteLine( "Password: {0}", string.IsNullOrEmpty( Server.Password ) ? "None" : Server.Password );
+            Console.WriteLine( "Timeout: {0}", Server.Timeout );
+
             PermissionProvider = new PermissionProvider();
             PermissionProvider.Load();
             PermissionProvider.Save();

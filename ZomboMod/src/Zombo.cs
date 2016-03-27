@@ -16,6 +16,8 @@
 
 using System;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using SDG.Unturned;
 using ZomboMod.Configuration;
@@ -213,8 +215,14 @@ namespace ZomboMod
             public string Name;
             public string Password;
             public string Map;
+
+            [JsonConverter( typeof( StringEnumConverter ) )]
             public EGameMode GameMode;
+
+            [JsonConverter( typeof( StringEnumConverter ) )]
             public ECameraMode CameraMode;
+
+            [JsonConverter( typeof( StringEnumConverter ) )]
             public ESteamSecurity Security;
         }
 

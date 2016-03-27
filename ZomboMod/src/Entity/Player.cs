@@ -232,10 +232,7 @@ namespace ZomboMod.Entity
             return Zombo.PermissionProvider.HasPermission( this, permission );
         }
 
-        void IEntity.Remove()
-        {
-            
-        }
+        void IEntity.Remove() {}
 
         internal Player( SDGPlayer sdgPlayer )
         {
@@ -248,7 +245,6 @@ namespace ZomboMod.Entity
             IsPro = SteamPlayer.isPro;
 
             Name = SteamPlayer.playerID.characterName;
-
         }
 
         internal SDGPlayer SDGPlayer;

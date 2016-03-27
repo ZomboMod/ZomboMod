@@ -1,0 +1,10 @@
+.vs/
+packages/
+
+ZomboMod/obj/
+ZomboMod/bin/
+
+ZomboMod.Patcher/bin/
+ZomboMod.Patcher/obj/
+
+ZomboMod.sln.DotSettings.user

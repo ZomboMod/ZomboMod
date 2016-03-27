@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\Unturned\Zombo\All\Unturned_Data\Managed\</OutputPath>
+    <OutputPath>..\..\..\Unturned\Zombo\All\Unturned\Unturned_Data\Managed\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

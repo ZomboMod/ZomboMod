@@ -27,16 +27,17 @@ namespace ZomboMod.Patcher.Patches
         public override void Apply( ModuleDefinition mdef )
         {
             var method = mdef.GetMethod( "SDG.Unturned.Provider", "Awake" );
-            var success = false;
 
-            method.Body.Instructions
-                    .Where( _ => _.OpCode == OpCodes.Call && _.Operand.ToString() == "System.Void SDG.Unturned.Commander::init()" )
-                    .ForEach( _ => {
-                        _.Operand = mdef.Import( typeof(Core.ZomboCore).GetMethod( "PreInit" ) );
-                        success = true;
-                    } );
+            var instr = method.Body.Instructions.FirstOrDefault( 
+                i => i.OpCode == OpCodes.Call && i.Operand.ToString() == "System.Void SDG.Unturned.Commander::init()" 
+            );
 
-            if ( !success )
+            if ( instr != null )
+            {
+                var init = Instruction.Create( OpCodes.Call, mdef.Import( typeof (Core.ZomboCore).GetMethod( "PreInit" ) ) );
+                method.Body.GetILProcessor().InsertAfter( instr, init );
+            }
+            else
             {
                 Severe( "Commander::init() not found" );
             }

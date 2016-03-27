@@ -14,7 +14,6 @@
 *   
 */
 
-using System;
 using Mono.Cecil;
 using ZomboMod.Patcher.Util;
 
@@ -24,23 +23,25 @@ namespace ZomboMod.Patcher.Patches
     {
         public override void Apply( ModuleDefinition mdef )
         {
-            Action<string, string> ExposeField = ( type, field ) => {
-                var vehicleManagerField = mdef.GetField( $"SDG.Unturned.{type}", field );
-                vehicleManagerField.IsPrivate = false;
-                vehicleManagerField.IsPublic = true;
+            var fields = new[] {
+                new[] { "VehicleManager", "manager" },
+                new[] { "ItemManager", "manager" },
+                new[] { "AnimalManager", "manager" },
+                new[] { "BarricadeManager", "manager" },
+                new[] { "BeaconManager", "manager" },
+                new[] { "ChatManager", "manager" },
+                new[] { "ClaimManager", "manager" },
+                new[] { "EffectManager", "manager" },
+                new[] { "LevelManager", "manager" },
+                new[] { "LightingManager", "manager" },
+                new[] { "ObjectManager", "manager" },
             };
 
-            ExposeField( "VehicleManager", "manager" );
-            ExposeField( "ItemManager", "manager" );
-            ExposeField( "AnimalManager", "manager" );
-            ExposeField( "BarricadeManager", "manager" );
-            ExposeField( "BeaconManager", "manager" );
-            ExposeField( "ChatManager", "manager" );
-            ExposeField( "ClaimManager", "manager" );
-            ExposeField( "EffectManager", "manager" );
-            ExposeField( "LevelManager", "manager" );
-            ExposeField( "LightingManager", "manager" );
-            ExposeField( "ObjectManager", "manager" );
+            fields.ForEach( f => {
+                var vehicleManagerField = mdef.GetField( $"SDG.Unturned.{f[0]}", f[1] );
+                vehicleManagerField.IsPrivate = false;
+                vehicleManagerField.IsPublic = true;
+            } );
         }
     }
 }

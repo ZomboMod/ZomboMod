@@ -96,19 +96,21 @@ namespace ZomboMod
             get { return ConnectedPlayers.AsEnumerable(); } 
         }
 
-        internal Server( ushort port, string map )
-        {
-            ConnectedPlayers = new List<Player>();
-
-            Port = port;
-            Map = map;
-
-            Provider.onServerConnected += PlayerConnectedCallback;
-            Provider.onServerDisconnected += PlayerDisconnectedCallback;
-        }
-
         public void Broadcast( params string[] messages )
         {
+            throw new NotImplementedException();
+        }
+
+        public void Shutdown()
+        {
+            Provider.shutdown();
+        }
+
+        public void Shotdown( string reason )
+        {
+            /*
+                TODO kick players and shutdown
+            */
             throw new NotImplementedException();
         }
 
@@ -140,6 +142,17 @@ namespace ZomboMod
         private void PlayerConnectedCallback( CSteamID id )
         {
             ConnectedPlayers.Add( new Player( PlayerTool.getPlayer(id) ) );
+        }
+
+        internal Server( ushort port, string map )
+        {
+            ConnectedPlayers = new List<Player>();
+
+            Port = port;
+            Map = map;
+
+            Provider.onServerConnected += PlayerConnectedCallback;
+            Provider.onServerDisconnected += PlayerDisconnectedCallback;
         }
 
         internal List<Player> ConnectedPlayers;

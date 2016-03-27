@@ -37,7 +37,7 @@ namespace ZomboMod.Plugin
         }
 
         /// <summary>
-        /// Load plugin from assembly (Does not call the <see cref="PluginBase.OnLoad"/>)
+        /// Load plugin from assembly (This Does not call the <see cref="PluginBase.OnLoad"/>)
         /// </summary>
         /// <param name="asm">Target assembly</param>
         /// <returns>Instance of loaded plugin.</returns>
@@ -53,14 +53,19 @@ namespace ZomboMod.Plugin
                 throw new InvalidOperationException( $"Cannot load '{pluginType}' because it has no public constructors." );
             }
 
-            var pluginInfoAttr = pluginType.GetCustomAttributes( typeof (PluginInfo), false ).FirstOrDefault();
+            var pluginInfoAttr = (PluginInfo) pluginType.GetCustomAttributes( typeof (PluginInfo), false ).First(f => f is PluginInfo);
 
             if ( pluginInfoAttr == null )
             {
                 throw new InvalidOperationException( $"Cannot load '{pluginType}' because it doesn't have the 'PluginInfo' attribute." );
             }
 
-            return Activator.CreateInstance( pluginType, pluginInfoAttr ) as PluginBase;
+            if ( pluginInfoAttr.Name == null )
+            {
+                throw new InvalidOperationException( $"Cannot load '{pluginType}' because 'PluginInfo.Name' is null." );
+            }
+
+            return Activator.CreateInstance( pluginType ) as PluginBase;
         }
     }
 }

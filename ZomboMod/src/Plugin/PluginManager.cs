@@ -59,10 +59,10 @@ namespace ZomboMod.Plugin
 
         internal void Init()
         {
+            Console.WriteLine( $"Loading plugins..." );
+
             foreach ( var file in Directory.GetFiles( Zombo.PluginsFolder, "*.dll", SearchOption.TopDirectoryOnly ) )
             {
-                Console.WriteLine( $"Loading plugin '{Path.GetFileNameWithoutExtension( file )}'" );
-
                 try
                 {
                     var plugin = Loader.LoadFrom( file );
@@ -76,8 +76,10 @@ namespace ZomboMod.Plugin
                     Console.WriteLine( ex );
                 }
             }
+
+            Console.WriteLine( "Loaded {0} {1}.", _plugins.Count, _plugins.Count == 1 ? "plugin" : "plugins" );
         }
 
-        private Dictionary<string, PluginBase> _plugins;
+        private readonly Dictionary<string, PluginBase> _plugins;
     }
 }

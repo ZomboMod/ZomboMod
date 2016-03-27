@@ -14,33 +14,42 @@
 *   
 */
 
+using System.Linq;
+
 namespace ZomboMod.Plugin
 {
     public abstract class PluginBase
     {
         public PluginInfo Info { get; private set; }
 
-        private PluginBase( PluginInfo info )
+        internal PluginBase( PluginInfo info )
         {
             Info = info;
         }
 
-        public void OnLoad() {}
+        protected PluginBase()
+        {
+            Info = (PluginInfo) GetType().GetCustomAttributes( typeof( PluginInfo ), false )
+                                         .First( f => f is PluginInfo );
+        }
 
-        public void OnUnload() {}
+        public virtual void OnLoad() {}
 
-        public void OnReload() {}
+        public virtual void OnUnload() {}
+
+        public virtual void OnReload() {}
 
         internal void Load()
         {
-            // load commands
-            // load events
-            // Call OnLoad
+            // TODO: load commands & events
+
+            OnLoad();
         }
 
         internal void Unload()
         {
-            // reverse of load
+            // TODO: reverse of load
+            OnUnload();
         }
     }
 }

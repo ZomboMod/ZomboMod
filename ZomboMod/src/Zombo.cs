@@ -62,7 +62,7 @@ namespace ZomboMod
         /// <summary>
         /// Settings
         /// </summary>
-        public static ZomboSettngs Settings { get; private set; }
+        public static ZomboSettings Settings { get; private set; }
 
         /// <summary>
         /// TODO
@@ -93,7 +93,7 @@ namespace ZomboMod
                 Directory.CreateDirectory( PluginsFolder );
             }
 
-            Settings = new ZomboSettngs();
+            Settings = new ZomboSettings();
 
             var settingsFile = Folder + "Settings.json";
 
@@ -138,7 +138,7 @@ namespace ZomboMod
         }
     }
 
-    public class ZomboSettngs : JsonConfig
+    public class ZomboSettings : JsonConfig
     {
         public ServerSettings Server { get; set; }
 

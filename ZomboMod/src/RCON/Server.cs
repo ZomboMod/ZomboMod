@@ -31,6 +31,7 @@ namespace ZomboMod.RCON
                     RCONConnection newclient = new RCONConnection(listener.AcceptTcpClient());
                     clients.Add(newclient);
                     newclient.Send("ZomboMod Rcon" + Assembly.GetExecutingAssembly().GetName().Version + "\r\n");
+					newclient.Semd ("Rcon By RoyIL , Email For Support : a4834833@Gmail.Com")
                     ThreadPool.QueueUserWorkItem(handleConnection, newclient);
                 }
             });

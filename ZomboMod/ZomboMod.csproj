@@ -82,6 +82,10 @@
     <Compile Include="src\Entity\Player.cs" />
     <Compile Include="src\Entity\Vehicle.cs" />
     <Compile Include="src\Entity\Zombie.cs" />
+    <Compile Include="src\Logging\ELogType.cs" />
+    <Compile Include="src\Logging\LogEntry.cs" />
+    <Compile Include="src\Logging\Logger.cs" />
+    <Compile Include="src\Logging\SyncLoggerQueue.cs" />
     <Compile Include="src\Permission\IPermissible.cs" />
     <Compile Include="src\Permission\IPermissionProvider.cs" />
     <Compile Include="src\Permission\PermissionGroup.cs" />
@@ -92,6 +96,8 @@
     <Compile Include="src\Plugin\PluginLoader.cs" />
     <Compile Include="src\Plugin\PluginLoadFlags.cs" />
     <Compile Include="src\Plugin\PluginManager.cs" />
+    <Compile Include="src\RCON\RCONConnection.cs" />
+    <Compile Include="src\RCON\RCONServer.cs" />
     <Compile Include="src\Skill.cs" />
     <Compile Include="src\Steam\SteamUser.cs" />
     <Compile Include="src\Server.cs" />

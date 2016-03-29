@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Collections.Generic;
 using System.Reflection;
-using Zombo.Logging;
+using ZomboMod.Logging;
 using UnityEngine;
 
 namespace ZomboMod.RCON
@@ -19,7 +19,7 @@ namespace ZomboMod.RCON
 
         public void Awake()
         {
-            listener = new TcpListener(IPAddress.Any, R.Settings.Instance.RCON.Port);
+            listener = new TcpListener(IPAddress.Any, 8181); // TODO: Add to ZomboSettings
             listener.Start();
 
             // Logger.Log("Waiting for new connection");
@@ -31,7 +31,7 @@ namespace ZomboMod.RCON
                     RCONConnection newclient = new RCONConnection(listener.AcceptTcpClient());
                     clients.Add(newclient);
                     newclient.Send("ZomboMod Rcon" + Assembly.GetExecutingAssembly().GetName().Version + "\r\n");
-					newclient.Semd ("Rcon By RoyIL , Email For Support : a4834833@Gmail.Com")
+                    newclient.Send( "Rcon By RoyIL , Email For Support : a4834833@Gmail.Com" );
                     ThreadPool.QueueUserWorkItem(handleConnection, newclient);
                 }
             });
@@ -75,7 +75,7 @@ namespace ZomboMod.RCON
                         else
                         {
 
-                            if (command.Split(' ')[1] == R.Settings.Instance.RCON.Password)
+                            if (command.Split(' ')[1] == "12345") // TODO: Add to ZomboSettings
                             {
                                 newclient.Authenticated = true;
                                 //newclient.Send("You have Login!\r\n");
@@ -103,8 +103,7 @@ namespace ZomboMod.RCON
                     }
                     if (command != "ia")
                         Logger.Log(command);
-                    R.Commands.Execute(new ConsolePlayer(), command);
-                    command = "";
+                    // TODO: Dispatch command.
                 }
 
                 clients.Remove(newclient);

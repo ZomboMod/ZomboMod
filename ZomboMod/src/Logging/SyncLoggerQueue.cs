@@ -1,4 +1,4 @@
-﻿using ZomboMod.Core.RCON;
+﻿using ZomboMod.RCON;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,7 +6,7 @@ using System.IO;
 
 namespace ZomboMod.Logging
 {
-    public class syncLoggerQueue
+    public class AsyncLoggerQueue
     {
         public static AsyncLoggerQueue Current = new AsyncLoggerQueue();
 
@@ -65,14 +65,17 @@ namespace ZomboMod.Logging
                 }
             }
         }
-        private void processLog(LogEntry entry) {
-            StreamWriter streamWriter = File.AppendText(Path.Combine(Environment.LogsDirectory, Environment.LogFile));
-            streamWriter.WriteLine("[" + DateTime.Now + "] [" + entry.Severity.ToString() + "] " + entry.Message);
-            streamWriter.Close();
-            if (entry.RCON && R.Settings != null && R.Settings.Instance.RCON.Enabled)
-            {
-                RCONServer.Broadcast(entry.Message);
-            }
+        private void processLog(LogEntry entry)
+        {
+            // TODO R.Setting, Environment.LogsDirectory, Environment.LogFile is from Rocket, what is doing here...?
+            // 
+            //StreamWriter streamWriter = File.AppendText(Path.Combine(Environment.LogsDirectory, Environment.LogFile));
+            //streamWriter.WriteLine("[" + DateTime.Now + "] [" + entry.Severity.ToString() + "] " + entry.Message);
+            //streamWriter.Close();
+            //if (entry.RCON && R.Settings != null && R.Settings.Instance.RCON.Enabled)
+            //{
+            //    RCONServer.Broadcast(entry.Message);
+            //}
         }
     }
 }

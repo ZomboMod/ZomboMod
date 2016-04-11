@@ -27,7 +27,7 @@ using static Mono.Cecil.Cil.OpCodes;
 
 namespace ZomboMod.Patcher.Patches
 {
-    public class CoreInitPatch : Patch
+    public class CorePatch : Patch
     {
         public override void Apply( ModuleDefinition mdef )
         {

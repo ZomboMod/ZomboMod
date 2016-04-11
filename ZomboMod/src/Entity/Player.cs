@@ -17,11 +17,11 @@
 using System;
 using System.Collections.Generic;
 using SDG.Unturned;
+using Steamworks;
 using UnityEngine;
 using ZomboMod.Permission;
-using ZomboMod.Steam;
-
 using SDGPlayer = SDG.Unturned.Player;
+using SteamUser = ZomboMod.Steam.SteamUser;
 
 namespace ZomboMod.Entity
 {
@@ -238,7 +238,7 @@ namespace ZomboMod.Entity
 
         public void Kick( string reason = "Undefined" )
         {
-            throw new NotImplementedException();
+            Provider.kick( SteamUser.SteamID, reason );
         }
 
         public Vector3? GetEyePosition( float distance, int masks )
@@ -266,14 +266,30 @@ namespace ZomboMod.Entity
             throw new NotImplementedException();
         }
 
+        //TODO TEST
         public void Suicide()
         {
-            throw new NotImplementedException();
+            SDGPlayer.life.askSuicide( SteamUser.SteamID );
         }
 
         public void Kill()
         {
-            throw new NotImplementedException();
+            EPlayerKill outKill; // Unused
+            SDGPlayer.life.askDamage( byte.MaxValue, Position.normalized, EDeathCause.KILL, 
+                                      ELimb.SKULL, CSteamID.Nil, out outKill );
+        }
+
+        public void Kill( EDeathCause cause, ELimb limb, CSteamID killer )
+        {
+            EPlayerKill outKill; // Unused
+            SDGPlayer.life.askDamage( byte.MaxValue, Position.normalized, cause,
+                                      limb, killer, out outKill );
+        }
+
+        public void Kill( EDeathCause cause, ELimb limb, CSteamID killer, out EPlayerKill outKill )
+        {
+            SDGPlayer.life.askDamage( byte.MaxValue, Position.normalized, cause, 
+                                      limb, killer, out outKill );
         }
 
         public bool HasPermission( string permission )

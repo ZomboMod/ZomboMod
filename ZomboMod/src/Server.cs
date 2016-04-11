@@ -91,6 +91,11 @@ namespace ZomboMod
             set { Provider.timeout = value; }
         }
 
+        public float Tps
+        {
+            get { return Provider.debugTPS; }
+        }
+
         public IEnumerable<Player> OnlinePlayers
         {
             get { return ConnectedPlayers.Values.AsEnumerable(); } 

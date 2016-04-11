@@ -101,7 +101,6 @@
     <Compile Include="src\Skill.cs" />
     <Compile Include="src\Steam\SteamUser.cs" />
     <Compile Include="src\Server.cs" />
-	<Compile Include="src\Chat\Chat.cs" />
     <Compile Include="src\World.cs" />
     <Compile Include="src\Zombo.cs" />
     <Compile Include="src\Core\ZomboCore.cs" />

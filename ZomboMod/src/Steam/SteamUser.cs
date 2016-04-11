@@ -15,9 +15,8 @@
 */
 
 
+using SDG.Unturned;
 using Steamworks;
-
-using SDGPlayer = SDG.Unturned.Player;
 
 namespace ZomboMod.Steam
 {
@@ -29,10 +28,11 @@ namespace ZomboMod.Steam
 
         public string Name { get; }
 
-        public SteamUser( SDGPlayer player )
+        public SteamUser( SteamPlayer player )
         {
-            SteamID = player.channel.owner.playerID.steamID;
-            GroupID = player.channel.owner.playerID.group;
+            SteamID = player.playerID.steamID;
+            GroupID = player.playerID.group;
+            Name = player.playerID.playerName;
         }
     }
 }

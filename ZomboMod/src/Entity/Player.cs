@@ -29,7 +29,15 @@ namespace ZomboMod.Entity
     {
         public SteamUser SteamUser { get; }
 
-        public string Name { get; }
+        public string CharacterName
+        {
+            get { return SteamPlayer.playerID.characterName; }
+        }
+
+        public byte CharacterId
+        {
+            get { return SteamPlayer.playerID.characterID; }
+        }
 
         public SteamChannel Channel
         {
@@ -73,32 +81,67 @@ namespace ZomboMod.Entity
 
         public Item Hat
         {
-            get;
-            set;
+            get { return _hat; }
+            set
+            {
+                if ( value == null )
+                    SDGPlayer.clothing.askWearHat( 0, 0, new byte[0], true );
+                else
+                    SDGPlayer.clothing.askWearHat( value.id, value.quality,
+                                                   value.state, true );
+            }
         }
 
         public Item Glasses
         {
-            get;
-            set;
+            get { return _glasses; }
+            set
+            {
+                if ( value == null )
+                    SDGPlayer.clothing.askWearGlasses( 0, 0, new byte[0], true );
+                else
+                    SDGPlayer.clothing.askWearGlasses( value.id, value.quality,
+                                                       value.state, true );
+            }
         }
 
         public Item Shirt
         {
-            get;
-            set;
+            get { return _shirt; }
+            set
+            {
+                if ( value == null )
+                    SDGPlayer.clothing.askWearShirt( 0, 0, new byte[0], true );
+                else
+                    SDGPlayer.clothing.askWearShirt( value.id, value.quality,
+                                                     value.state, true );
+            }
         }
 
         public Item Pants
         {
-            get;
-            set;
+            get { return _pants; }
+            set
+            {
+                if ( value == null )
+                    SDGPlayer.clothing.askWearPants( 0, 0, new byte[0], true );
+                else
+                    SDGPlayer.clothing.askWearPants( value.id, value.quality,
+                                                     value.state, true );
+            }
         }
 
         public Item Backpack
         {
-            get;
-            set;
+            get { return _backpack; }
+            set
+            {
+                if ( value == null )
+                    SDGPlayer.clothing.askWearBackpack( 0, 0, new byte[0], true );
+                else
+                    SDGPlayer.clothing.askWearBackpack( value.id, value.quality, 
+                                                        value.state, true );
+            }
         }
 
         public Item ItemInHand
@@ -247,9 +290,21 @@ namespace ZomboMod.Entity
         {
             SteamPlayer = handle;
             SDGPlayer = handle.player;
+
+            SteamUser = new SteamUser( SteamPlayer );
+
+            SDGPlayer.clothing.onHatUpdated += ( id, quality, state ) => _hat = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onGlassesUpdated += ( id, quality, state ) => _glasses = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onBackpackUpdated += ( id, quality, state ) => _backpack = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onPantsUpdated += ( id, quality, state ) => _pants = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onMaskUpdated += ( id, quality, state ) => _mask = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onVestUpdated += ( id, quality, state ) => _vest = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onShirtUpdated += ( id, quality, state ) => _shirt = new Item( id, 1, quality, state );
         }
 
         internal SDGPlayer SDGPlayer;
         internal SteamPlayer SteamPlayer;
+
+        private Item _hat, _vest, _glasses, _mask, _shirt, _pants, _backpack, _itemInHand;
     }
 }

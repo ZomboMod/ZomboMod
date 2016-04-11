@@ -29,10 +29,10 @@ namespace ZomboMod.Patcher.Patches
 {
     public class CorePatch : Patch
     {
+        const string providerType = "SDG.Unturned.Provider";
+
         public override void Apply( ModuleDefinition mdef )
         {
-            const string providerType = "SDG.Unturned.Provider";
-
             var addPlayerMethod = mdef.GetMethod( providerType, "addPlayer" );
             var addPlayerInstr = addPlayerMethod.Body.Instructions;
 
@@ -128,7 +128,7 @@ namespace ZomboMod.Patcher.Patches
             }
             else
             {
-                Severe( "Commander::init() not found" );
+                Severe( "SteamAdminlist::load() not found" );
             }
         }
 

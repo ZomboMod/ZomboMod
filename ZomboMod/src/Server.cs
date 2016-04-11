@@ -136,12 +136,6 @@ namespace ZomboMod
 
         private void PlayerDisconnectedCallback( CSteamID id )
         {
-            ConnectedPlayers.RemoveAll( p => p.SteamUser.SteamID == id );
-        }
-
-        private void PlayerConnectedCallback( CSteamID id )
-        {
-            ConnectedPlayers.Add( new Player( PlayerTool.getPlayer(id) ) );
         }
 
         internal Server( ushort port, string map )
@@ -150,11 +144,8 @@ namespace ZomboMod
 
             Port = port;
             Map = map;
-
-            Provider.onServerConnected += PlayerConnectedCallback;
-            Provider.onServerDisconnected += PlayerDisconnectedCallback;
         }
 
-        internal List<Player> ConnectedPlayers;
+        internal List<Player> ConnectedPlayers;//TODO: change to map, Key -> steamId, Value -> player
     }
 }

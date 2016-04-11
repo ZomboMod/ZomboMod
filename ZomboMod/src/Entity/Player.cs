@@ -29,11 +29,17 @@ namespace ZomboMod.Entity
     {
         public SteamUser SteamUser { get; }
 
-        public SteamChannel Channel { get; }
-
         public string Name { get; }
 
-        public bool IsPro { get; }
+        public SteamChannel Channel
+        {
+            get { return SteamPlayer.player.channel;  }
+        }
+
+        public bool IsPro
+        {
+            get { return SteamPlayer.isPro; }
+        }
 
         public uint Health
         {
@@ -234,17 +240,10 @@ namespace ZomboMod.Entity
 
         void IEntity.Remove() {}
 
-        internal Player( SDGPlayer sdgPlayer )
+        internal Player( SteamPlayer handle )
         {
-            SDGPlayer = sdgPlayer;
-
-            SteamUser = new SteamUser( sdgPlayer );
-
-            Channel = sdgPlayer.channel;
-            SteamPlayer = Channel.owner;
-            IsPro = SteamPlayer.isPro;
-
-            Name = SteamPlayer.playerID.characterName;
+            SteamPlayer = handle;
+            SDGPlayer = handle.player;
         }
 
         internal SDGPlayer SDGPlayer;

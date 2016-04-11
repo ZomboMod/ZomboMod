@@ -20,6 +20,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using SDG.Unturned;
+using Steamworks;
+using UnityEngine;
+using ZomboMod.Common;
 using ZomboMod.Configuration;
 using ZomboMod.Permission;
 using ZomboMod.Permission.Internal;
@@ -70,9 +73,9 @@ namespace ZomboMod
         public static IPermissionProvider PermissionProvider { get; private set; }
 
         /// <summary>
-        /// Called dinamically by ZomboCore.
+        /// Called by ZomboCore.
         /// </summary>
-        private static void Init()
+        internal static void Init()
         {
             if ( Server != null )
             {
@@ -135,6 +138,28 @@ namespace ZomboMod
 
             PluginManager = new PluginManager();
             PluginManager.Init();
+
+            Commander.register( new TestCommand() );
+        }
+    }
+
+    /*
+        TODO:
+         just for test
+    */
+    public class TestCommand : Command
+    {
+        public TestCommand()
+        {
+            _command = "test";
+        }
+
+        protected override void execute( CSteamID executorID, string parameter )
+        {
+            Zombo.Server.OnlinePlayers.ForEach( p =>
+            {
+                Console.WriteLine( ">>> " + p.Ping );
+            } );
         }
     }
 
@@ -226,6 +251,8 @@ namespace ZomboMod
             public ESteamSecurity Security;
         }
 
+
+        // TODO: move
         private static bool TryParseEnum<T>( string raw, out T ret )
         {
             try

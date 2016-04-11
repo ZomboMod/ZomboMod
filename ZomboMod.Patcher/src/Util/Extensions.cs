@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 
 namespace ZomboMod.Patcher.Util
 {
@@ -39,7 +40,7 @@ namespace ZomboMod.Patcher.Util
             }
         }
 
-        public static MethodDefinition GetMethod( this ModuleDefinition mdef, string typeName, string methodName, int paramsCount = 0 )
+        public static MethodDefinition GetMethod( this ModuleDefinition mdef, string typeName, string methodName, int paramsCount = -1 )
         {
             var type = mdef.GetType( typeName );
 
@@ -48,7 +49,9 @@ namespace ZomboMod.Patcher.Util
                 throw new InvalidOperationException( $"Type {typeName} not found." );
             }
 
-            var method = type.Methods.First( _ => _.Name == methodName && _.Parameters.Count == paramsCount );
+            var method = type.GetMethods().FirstOrDefault( _ => {
+                return _.Name == methodName && (paramsCount == -1 || _.Parameters.Count == paramsCount);
+            } );
 
             if ( method == null )
             {

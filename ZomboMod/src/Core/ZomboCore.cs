@@ -15,8 +15,8 @@
 */
 
 using System;
-using System.Reflection;
 using SDG.Unturned;
+using UnityEngine;
 
 namespace ZomboMod.Core
 {
@@ -33,15 +33,28 @@ namespace ZomboMod.Core
 ";
         public static void PreInit()
         {
-            Commander.init();
-
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine( HEADER );
             Console.ForegroundColor = ConsoleColor.White;
 
-            var zomboType = typeof (Zombo);
-            zomboType.GetMethod( "Init", (BindingFlags) 0x28 ).Invoke( null, new object[0] );
+            Zombo.Init();
+        }
+
+        public static void OnPlayerPreAdded( SteamPlayerID playerId, ref Vector3 point   , ref byte angle                     ,
+                                             ref bool isPro        , ref bool isAdmin    , ref int channel  , ref byte face   ,
+                                             ref byte hair         , ref byte beard      , ref Color skin   , ref Color color ,
+                                             ref bool hand         , ref int shirtItem   , ref int pantsItem, ref int hatItem ,
+                                             ref int backpackItem  , ref int vestItem    , ref int maskiTEM                   , 
+                                             ref int glassesItem   , ref int[] skinItems , ref EPlayerSkillset skillset       ,
+                                             ref bool isAnonymous                                                             )
+        {
+            Console.WriteLine( playerId );
+        }
+
+        public static void OnPlayerAdded( SteamPlayer player )
+        {
+            Zombo.Server.ConnectedPlayers.Add( new Entity.Player( player ) );
         }
     }
 }

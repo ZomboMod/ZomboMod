@@ -63,7 +63,7 @@
     <Compile Include="src\Patches\ExposeFields.cs" />
     <Compile Include="src\Util\Extensions.cs" />
     <Compile Include="src\Patch.cs" />
-    <Compile Include="src\Patches\CoreInitPatch.cs" />
+    <Compile Include="src\Patches\CorePatch.cs" />
     <Compile Include="src\ZomboPatcher.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -238,7 +238,10 @@ namespace ZomboMod.Entity
             return Zombo.PermissionProvider.HasPermission( this, permission );
         }
 
-        void IEntity.Remove() {}
+        void IEntity.Remove()
+        {
+            throw new NotSupportedException( "Canont use IEntity::remove on Player, use Player::Kick instead." );
+        }
 
         internal Player( SteamPlayer handle )
         {

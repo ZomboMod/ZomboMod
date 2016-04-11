@@ -93,7 +93,7 @@ namespace ZomboMod
 
         public IEnumerable<Player> OnlinePlayers
         {
-            get { return ConnectedPlayers.AsEnumerable(); } 
+            get { return ConnectedPlayers.Values.AsEnumerable(); } 
         }
 
         public void Broadcast( params string[] messages )
@@ -116,22 +116,22 @@ namespace ZomboMod
 
         public Player GetPlayer( CSteamID id )
         {
-            return ConnectedPlayers.FirstOrDefault(p => p.SteamUser.SteamID == id);
+            return ConnectedPlayers.GetOrDefault( id.m_SteamID, null );
         }
 
         public Player GetPlayer( string name )
         {
-            return ConnectedPlayers.FirstOrDefault( p => p.Name.ContainsIgnoreCase( name ) ); 
+            throw new NotImplementedException();
         }
 
         public Player GetPlayer( SteamPlayer steamPlayer )
         {
-            return ConnectedPlayers.FirstOrDefault( p => p.Channel.owner == steamPlayer );
+            return ConnectedPlayers.Values.FirstOrDefault( p => p.Channel.owner == steamPlayer );
         }
 
         public Player GetPlayer( SDG.Unturned.Player sdgPlayer )
         {
-            return ConnectedPlayers.FirstOrDefault( p => p.SDGPlayer == sdgPlayer );
+            return ConnectedPlayers.Values.FirstOrDefault( p => p.SDGPlayer == sdgPlayer );
         }
 
         private void PlayerDisconnectedCallback( CSteamID id )
@@ -140,12 +140,16 @@ namespace ZomboMod
 
         internal Server( ushort port, string map )
         {
-            ConnectedPlayers = new List<Player>();
+            ConnectedPlayers = new Dictionary<ulong, Player>();
 
             Port = port;
             Map = map;
         }
 
-        internal List<Player> ConnectedPlayers;//TODO: change to map, Key -> steamId, Value -> player
+        /*
+            Key -> Player64ID
+            Value -> Player
+        */
+        internal Dictionary<ulong, Player> ConnectedPlayers;
     }
 }

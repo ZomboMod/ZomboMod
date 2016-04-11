@@ -15,6 +15,8 @@
 */
 
 using System;
+using JetBrains.Annotations;
+using static ZomboMod.Plugin.PluginLoadFlags;
 
 namespace ZomboMod.Plugin
 {
@@ -22,23 +24,36 @@ namespace ZomboMod.Plugin
     public sealed class PluginInfo : Attribute
     {
         /// <summary>
-        /// 
+        /// Name of plugin. Cannot be null.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// 
+        /// Version of plugin.
         /// </summary>
         public string Version { get; set; } = "0.0.0.0";
 
         /// <summary>
-        /// 
+        /// Author of plugin.
         /// </summary>
         public string Author { get; set; } = "Undefined";
 
         /// <summary>
-        /// 
+        /// <see cref="PluginLoadFlags"/>
         /// </summary>
-        public PluginLoadFlags LoadFlags { get; set; } = PluginLoadFlags.AUTO_REGISTER_COMMANDS | PluginLoadFlags.AUTO_REGISTER_EVENTS;
+        public PluginLoadFlags LoadFlags { get; set; } = AUTO_REGISTER_COMMANDS | AUTO_REGISTER_EVENTS;
+
+        public PluginInfo( string name, 
+                           string author = "0.0.0.", 
+                           string version = "Undefined",
+                           PluginLoadFlags loadFlags = AUTO_REGISTER_COMMANDS | AUTO_REGISTER_EVENTS )
+        {
+            Name = name;
+            Author = author;
+            Version = version;
+            LoadFlags = loadFlags;
+        }
+
+        public PluginInfo() {}
     }
 }

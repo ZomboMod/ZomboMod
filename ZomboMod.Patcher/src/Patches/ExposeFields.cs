@@ -52,7 +52,6 @@ namespace ZomboMod.Patcher.Patches
         
         public void CreateSetters( ModuleDefinition mdef )
         {
-            return;
             new [] {
                 new [] { "SDG.Unturned.PlayerSkills" , "experience" , "_experience"   },
                 new [] { "SDG.Unturned.PlayerLife"   , "isBleeding" , "_isBleeding"   },

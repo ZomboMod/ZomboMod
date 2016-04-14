@@ -22,7 +22,6 @@ using UnityEngine;
 using ZomboMod.Permission;
 using SDGPlayer = SDG.Unturned.Player;
 using SteamUser = ZomboMod.Steam.SteamUser;
-
 namespace ZomboMod.Entity
 {
     public class Player : IEntity, ILivingEntity, IPermissible
@@ -76,7 +75,37 @@ namespace ZomboMod.Entity
         public uint Experience
         {
             get { return SDGPlayer.skills.experience; }
-            set { throw new NotImplementedException(); }
+            set 
+            {
+                typeof(PlayerSkills).GetField( "_experience" ).SetValue( SDGPlayer.skills, value );
+                Channel.send( "tellExperience", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value );
+            }
+        }
+
+        public Item Mask
+        {
+            get { return _mask; }
+            set
+            {
+                if ( value == null )
+                    SDGPlayer.clothing.askWearMask( 0, 0, new byte[0], true );
+                else
+                    SDGPlayer.clothing.askWearMask( value.id, value.quality,
+                                                    value.state, true );
+            }
+        }
+
+        public Item Vest
+        {
+            get { return _vest; }
+            set
+            {
+                if ( value == null )
+                    SDGPlayer.clothing.askWearVest( 0, 0, new byte[0], true );
+                else
+                    SDGPlayer.clothing.askWearVest( value.id, value.quality,
+                                                    value.state, true );
+            }
         }
 
         public Item Hat
@@ -184,7 +213,11 @@ namespace ZomboMod.Entity
         public bool IsBleeding
         {
             get { return SDGPlayer.life.isBleeding; }
-            set { throw new NotImplementedException(); }
+            set 
+            {
+                typeof( PlayerLife ).GetField( "_bleeding" ).SetValue( SDGPlayer.life, value );
+                Channel.send( "tellBleeding", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value ); 
+            }
         }
 
         public bool IsLegBroken
@@ -299,7 +332,7 @@ namespace ZomboMod.Entity
 
         void IEntity.Remove()
         {
-            throw new NotSupportedException( "Canont use IEntity::remove on Player, use Player::Kick instead." );
+            throw new NotSupportedException( "Cannot use IEntity::remove on Player, use Player::Kick instead." );
         }
 
         internal Player( SteamPlayer handle )
@@ -309,13 +342,13 @@ namespace ZomboMod.Entity
 
             SteamUser = new SteamUser( SteamPlayer );
 
-            SDGPlayer.clothing.onHatUpdated += ( id, quality, state ) => _hat = new Item( id, 1, quality, state );
-            SDGPlayer.clothing.onGlassesUpdated += ( id, quality, state ) => _glasses = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onHatUpdated      += ( id, quality, state ) => _hat = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onGlassesUpdated  += ( id, quality, state ) => _glasses = new Item( id, 1, quality, state );
             SDGPlayer.clothing.onBackpackUpdated += ( id, quality, state ) => _backpack = new Item( id, 1, quality, state );
-            SDGPlayer.clothing.onPantsUpdated += ( id, quality, state ) => _pants = new Item( id, 1, quality, state );
-            SDGPlayer.clothing.onMaskUpdated += ( id, quality, state ) => _mask = new Item( id, 1, quality, state );
-            SDGPlayer.clothing.onVestUpdated += ( id, quality, state ) => _vest = new Item( id, 1, quality, state );
-            SDGPlayer.clothing.onShirtUpdated += ( id, quality, state ) => _shirt = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onPantsUpdated    += ( id, quality, state ) => _pants = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onMaskUpdated     += ( id, quality, state ) => _mask = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onVestUpdated     += ( id, quality, state ) => _vest = new Item( id, 1, quality, state );
+            SDGPlayer.clothing.onShirtUpdated    += ( id, quality, state ) => _shirt = new Item( id, 1, quality, state );
         }
 
         internal SDGPlayer SDGPlayer;

@@ -110,7 +110,7 @@ namespace ZomboMod.Patcher.Patches
                 Severe( "index == -1" );
             }
 
-            addPlayerMethod.Body.Instructions.ForEach( Console.WriteLine );
+            //addPlayerMethod.Body.Instructions.ForEach( Console.WriteLine );
 
             /*
                 Inject ZomboCore::PreInit() at Provider::Awake()

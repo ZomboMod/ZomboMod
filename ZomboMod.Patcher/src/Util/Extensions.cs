@@ -61,6 +61,11 @@ namespace ZomboMod.Patcher.Util
             return method;
         }
 
+        public static FieldDefinition GetField( this ModuleDefinition mdef, TypeDefinition type, string fieldName )
+        {
+            return GetField( mdef, type.FullName, fieldName );
+        }
+
         public static FieldDefinition GetField( this ModuleDefinition mdef, string typeName, string fieldName )
         {
             var type = mdef.GetType( typeName );

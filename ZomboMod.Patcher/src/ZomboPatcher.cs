@@ -43,10 +43,7 @@ namespace ZomboMod.Patcher
                 var mainModule = AssemblyDefinition.ReadAssembly( "Assembly-CSharp.dll" ).MainModule;
                 var zomboCore = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.dll" );
 
-                foreach ( var dfs in zomboCore.MainModule.AssemblyReferences )
-                {
-                    mainModule.AssemblyReferences.Add( dfs );
-                }
+                mainModule.AssemblyReferences.Add( zomboCore.Name );
 
                 var allTypes = typeof (ZomboPatcher).Assembly.GetTypes();
                 

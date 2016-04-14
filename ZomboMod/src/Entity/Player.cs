@@ -308,15 +308,13 @@ namespace ZomboMod.Entity
         public void Kill()
         {
             EPlayerKill outKill; // Unused
-            SDGPlayer.life.askDamage( byte.MaxValue, Position.normalized, EDeathCause.KILL, 
-                                      ELimb.SKULL, CSteamID.Nil, out outKill );
+            Kill( EDeathCause.KILL, ELimb.SKULL, CSteamID.Nil, out outKill );
         }
 
         public void Kill( EDeathCause cause, ELimb limb, CSteamID killer )
         {
             EPlayerKill outKill; // Unused
-            SDGPlayer.life.askDamage( byte.MaxValue, Position.normalized, cause,
-                                      limb, killer, out outKill );
+            Kill( cause, limb, killer, out outKill );
         }
 
         public void Kill( EDeathCause cause, ELimb limb, CSteamID killer, out EPlayerKill outKill )

@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\Common\Extensions.cs" />
+    <Compile Include="src\Common\ReflectionUtil.cs" />
     <Compile Include="src\Configuration\IConfig.cs" />
     <Compile Include="src\Configuration\JsonConfig.cs" />
     <Compile Include="src\Entity\IEntity.cs" />

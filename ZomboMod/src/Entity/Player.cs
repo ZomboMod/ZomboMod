@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using SDG.Unturned;
 using Steamworks;
 using UnityEngine;
+using ZomboMod.Common;
 using ZomboMod.Permission;
 using SDGPlayer = SDG.Unturned.Player;
 using SteamUser = ZomboMod.Steam.SteamUser;
@@ -77,7 +78,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.skills.experience; }
             set 
             {
-                typeof(PlayerSkills).GetField( "_experience" ).SetValue( SDGPlayer.skills, value );
+                ReflectionUtil.GetField<PlayerSkills>( "_experience" ).SetValue( SDGPlayer.skills, value ); ;
                 Channel.send( "tellExperience", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value );
             }
         }
@@ -87,11 +88,12 @@ namespace ZomboMod.Entity
             get { return _mask; }
             set
             {
-                if ( value == null )
-                    SDGPlayer.clothing.askWearMask( 0, 0, new byte[0], true );
-                else
-                    SDGPlayer.clothing.askWearMask( value.id, value.quality,
-                                                    value.state, true );
+                var quality = value?.quality ?? 0;
+                var id = value?.id ?? 0;
+                var state = value?.state ?? new byte[0];
+
+                Channel.send( "tellWearMask", ESteamCall.ALL,
+                    ESteamPacket.UPDATE_RELIABLE_BUFFER, id, quality, state, true );
             }
         }
 
@@ -100,11 +102,12 @@ namespace ZomboMod.Entity
             get { return _vest; }
             set
             {
-                if ( value == null )
-                    SDGPlayer.clothing.askWearVest( 0, 0, new byte[0], true );
-                else
-                    SDGPlayer.clothing.askWearVest( value.id, value.quality,
-                                                    value.state, true );
+                var quality = value?.quality ?? 0;
+                var id = value?.id ?? 0;
+                var state = value?.state ?? new byte[0];
+
+                Channel.send( "tellWearVest", ESteamCall.ALL,
+                    ESteamPacket.UPDATE_RELIABLE_BUFFER, id, quality, state, true );
             }
         }
 
@@ -113,11 +116,12 @@ namespace ZomboMod.Entity
             get { return _hat; }
             set
             {
-                if ( value == null )
-                    SDGPlayer.clothing.askWearHat( 0, 0, new byte[0], true );
-                else
-                    SDGPlayer.clothing.askWearHat( value.id, value.quality,
-                                                   value.state, true );
+                var quality = value?.quality ?? 0;
+                var id = value?.id ?? 0;
+                var state = value?.state ?? new byte[0];
+
+                Channel.send( "tellWearHat", ESteamCall.ALL,
+                    ESteamPacket.UPDATE_RELIABLE_BUFFER, id, quality, state, true );
             }
         }
 
@@ -126,11 +130,12 @@ namespace ZomboMod.Entity
             get { return _glasses; }
             set
             {
-                if ( value == null )
-                    SDGPlayer.clothing.askWearGlasses( 0, 0, new byte[0], true );
-                else
-                    SDGPlayer.clothing.askWearGlasses( value.id, value.quality,
-                                                       value.state, true );
+                var quality = value?.quality ?? 0;
+                var id = value?.id ?? 0;
+                var state = value?.state ?? new byte[0];
+
+                Channel.send( "tellWearGlasses", ESteamCall.ALL,
+                    ESteamPacket.UPDATE_RELIABLE_BUFFER, id, quality, state, true );
             }
         }
 
@@ -139,11 +144,12 @@ namespace ZomboMod.Entity
             get { return _shirt; }
             set
             {
-                if ( value == null )
-                    SDGPlayer.clothing.askWearShirt( 0, 0, new byte[0], true );
-                else
-                    SDGPlayer.clothing.askWearShirt( value.id, value.quality,
-                                                     value.state, true );
+                var quality = value?.quality ?? 0;
+                var id = value?.id ?? 0;
+                var state = value?.state ?? new byte[0];
+
+                Channel.send( "tellWearShirt", ESteamCall.ALL,
+                    ESteamPacket.UPDATE_RELIABLE_BUFFER, id, quality, state, true );
             }
         }
 
@@ -152,11 +158,12 @@ namespace ZomboMod.Entity
             get { return _pants; }
             set
             {
-                if ( value == null )
-                    SDGPlayer.clothing.askWearPants( 0, 0, new byte[0], true );
-                else
-                    SDGPlayer.clothing.askWearPants( value.id, value.quality,
-                                                     value.state, true );
+                var quality = value?.quality ?? 0;
+                var id = value?.id ?? 0;
+                var state = value?.state ?? new byte[0];
+
+                Channel.send( "tellWearPants", ESteamCall.ALL,
+                    ESteamPacket.UPDATE_RELIABLE_BUFFER, id, quality, state, true );
             }
         }
 
@@ -165,11 +172,12 @@ namespace ZomboMod.Entity
             get { return _backpack; }
             set
             {
-                if ( value == null )
-                    SDGPlayer.clothing.askWearBackpack( 0, 0, new byte[0], true );
-                else
-                    SDGPlayer.clothing.askWearBackpack( value.id, value.quality, 
-                                                        value.state, true );
+                var quality = value?.quality ?? 0;
+                var id = value?.id ?? 0;
+                var state = value?.state ?? new byte[0];
+
+                Channel.send( "tellWearBackpack", ESteamCall.ALL,
+                    ESteamPacket.UPDATE_RELIABLE_BUFFER, id, quality, state, true );
             }
         }
 
@@ -179,7 +187,7 @@ namespace ZomboMod.Entity
             set;
         }
 
-        private bool IsAdmin
+        public bool IsAdmin
         {
             get { return SteamPlayer.isAdmin; }
             set { SteamPlayer.isAdmin = value; }
@@ -215,7 +223,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.life.isBleeding; }
             set 
             {
-                typeof( PlayerLife ).GetField( "_bleeding" ).SetValue( SDGPlayer.life, value );
+                ReflectionUtil.GetField<PlayerLife>( "_isBleeding" ).SetValue( SDGPlayer.life, value );
                 Channel.send( "tellBleeding", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value ); 
             }
         }
@@ -244,14 +252,13 @@ namespace ZomboMod.Entity
 
         public float Rotation
         {
-            get { throw new NotImplementedException(); }
+            get { return SDGPlayer.transform.eulerAngles.y; }
             set { throw new NotImplementedException(); }
         }
 
         public Vector3 Position
         {
             get { return SDGPlayer.transform.position; }
-            set { SDGPlayer.transform.position = value; }
         }
 
         public IEnumerable<string> Permissions
@@ -261,17 +268,29 @@ namespace ZomboMod.Entity
 
         public void Teleport( Vector3 position, float rotation )
         {
-            throw new NotImplementedException();
+            SDGPlayer.transform.position = position;
+            Channel.send( "askTeleport", ESteamCall.ALL, ESteamPacket.UPDATE_RELIABLE_BUFFER, 
+                          Position, MeasurementTool.angleToByte( rotation ) );
         }
 
         public void Teleport( Vector3 position )
         {
-            throw new NotImplementedException();
+            Teleport( position, Rotation );
         }
 
         public void Kick( string reason = "Undefined" )
         {
             Provider.kick( SteamUser.SteamID, reason );
+        }
+
+        public bool GiveItem( Item item )
+        {
+            return GiveItem( item, false );
+        }
+
+        public bool GiveItem( Item item, bool dropIfInventoryFull )
+        {
+            return false;
         }
 
         public Vector3? GetEyePosition( float distance, int masks )
@@ -294,12 +313,26 @@ namespace ZomboMod.Entity
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Make player say something on chat.
+        /// </summary>
+        /// <param name="messages">Messages to say</param>
         public void Chat( params string[] messages )
+        {
+            Chat( EChatMode.GLOBAL, messages );
+        }
+
+        /// <summary>
+        /// Make player say something on chat.
+        /// </summary>
+        /// <param name="messages">Messages to say</param>
+        /// <param name="chatMode">ChatMode</param>
+        /// <see cref="EChatMode"/>
+        public void Chat( EChatMode chatMode, params string[] messages )
         {
             throw new NotImplementedException();
         }
 
-        //TODO TEST
         public void Suicide()
         {
             SDGPlayer.life.askSuicide( SteamUser.SteamID );

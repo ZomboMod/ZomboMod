@@ -16,13 +16,12 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using SDG.Unturned;
 using Steamworks;
-using UnityEngine;
-using ZomboMod.Common;
 using ZomboMod.Configuration;
 using ZomboMod.Permission;
 using ZomboMod.Permission.Internal;
@@ -123,6 +122,7 @@ namespace ZomboMod
             Server.Timeout = Settings.Server.Timeout;
 
             // TODO LOGGER
+            Console.WriteLine();
             Console.WriteLine( "Pvp: {0}", Server.IsPvp ? "Enabled" : "Disabled" );
             Console.WriteLine( "GameMode: {0}", Server.GameMode );
             Console.WriteLine( "CameraMode: {0}", Server.CameraMode );
@@ -131,6 +131,7 @@ namespace ZomboMod
             Console.WriteLine( "Name: {0}", Server.Name );
             Console.WriteLine( "Password: {0}", string.IsNullOrEmpty( Server.Password ) ? "None" : Server.Password );
             Console.WriteLine( "Timeout: {0}", Server.Timeout );
+            Console.WriteLine();
 
             PermissionProvider = new PermissionProvider();
             PermissionProvider.Load();
@@ -156,10 +157,7 @@ namespace ZomboMod
 
         protected override void execute( CSteamID executorID, string parameter )
         {
-            Zombo.Server.OnlinePlayers.ForEach( p =>
-            {
-                Console.WriteLine( ">>> " + p.Ping );
-            } );
+            var player = Zombo.Server.OnlinePlayers.FirstOrDefault();
         }
     }
 

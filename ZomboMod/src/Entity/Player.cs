@@ -278,12 +278,6 @@ namespace ZomboMod.Entity
             }
         }
 
-        public bool IsFreezing
-        {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
-        }
-
         public bool IsUnderWater
         {
             get { throw new NotImplementedException(); }

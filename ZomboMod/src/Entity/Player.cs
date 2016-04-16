@@ -48,23 +48,63 @@ namespace ZomboMod.Entity
         {
             get { return SteamPlayer.isPro; }
         }
+        
+        public EPlayerTemperature Temperature
+        {
+            get { return SDGPlayer.life.temperature; }
+            set { throw new NotImplementedException(); }
+        }
+
+        public uint Virus
+        {
+            get { return SDGPlayer.life.virus; }
+            set
+            {
+                if ( value > 0xFF )
+                    throw new ArgumentOutOfRangeException("virus must be between 0 and 255");
+                var bValue = (byte) value;
+                ReflectionUtil.GetField<PlayerLife>( "_virus" ).SetValue( SDGPlayer.life, bValue );
+                Channel.send( "tellVirus", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
+            }
+        }
 
         public uint Health
         {
             get { return SDGPlayer.life.health; }
-            set { throw new NotImplementedException(); }
+            set
+            {
+                if ( value > 0xFF )
+                    throw new ArgumentOutOfRangeException("health must be between 0 and 255");
+                var bValue = (byte) value;
+                ReflectionUtil.GetField<PlayerLife>( "_health" ).SetValue( SDGPlayer.life, bValue );
+                Channel.send( "tellHealth", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
+            }
         }
 
-        public uint Hunger
+        public uint Food
         {
             get { return SDGPlayer.life.food; }
-            set { throw new NotImplementedException(); }
+            set
+            {
+                if ( value > 0xFF )
+                    throw new ArgumentOutOfRangeException("food must be between 0 and 255");
+                var bValue = (byte) value;
+                ReflectionUtil.GetField<PlayerLife>( "_food" ).SetValue( SDGPlayer.life, bValue );
+                Channel.send( "tellFood", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
+            }
         }
 
-        public uint Thirst
+        public uint Water
         {
             get { return SDGPlayer.life.water; }
-            set { throw new NotImplementedException(); }
+            set
+            {
+                if ( value > 0xFF )
+                    throw new ArgumentOutOfRangeException("water must be between 0 and 255");
+                var bValue = (byte) value;
+                ReflectionUtil.GetField<PlayerLife>( "_water" ).SetValue( SDGPlayer.life, bValue );
+                Channel.send( "tellWater", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
+            }
         }
 
         public uint Stamina
@@ -76,7 +116,7 @@ namespace ZomboMod.Entity
         public uint Experience
         {
             get { return SDGPlayer.skills.experience; }
-            set 
+            set
             {
                 ReflectionUtil.GetField<PlayerSkills>( "_experience" ).SetValue( SDGPlayer.skills, value ); ;
                 Channel.send( "tellExperience", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value );
@@ -231,7 +271,11 @@ namespace ZomboMod.Entity
         public bool IsLegBroken
         {
             get { return SDGPlayer.life.isBroken; }
-            set { throw new NotImplementedException(); }
+            set 
+            {
+                ReflectionUtil.GetField<PlayerLife>( "_isBroken" ).SetValue( SDGPlayer.life, value );
+                Channel.send( "tellBroken", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value ); 
+            }
         }
 
         public bool IsFreezing
@@ -310,7 +354,9 @@ namespace ZomboMod.Entity
 
         public void SendMessage( params string[] messages )
         {
-            throw new NotImplementedException();
+            messages.ForEach( msg => {
+                ChatManager.say( SteamUser.SteamID, msg, Color.green );
+            });
         }
 
         /// <summary>

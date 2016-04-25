@@ -49,6 +49,14 @@
       <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>UnturnedDlls\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>UnturnedDlls\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,11 +68,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\Patches\ExposeFields.cs" />
+    <Compile Include="src\Patches\ProviderPatch.cs" />
     <Compile Include="src\Util\Extensions.cs" />
     <Compile Include="src\Patch.cs" />
-    <Compile Include="src\Patches\CorePatch.cs" />
     <Compile Include="src\ZomboPatcher.cs" />
+    <Compile Include="src\InjectAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

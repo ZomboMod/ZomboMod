@@ -14,34 +14,17 @@
 *   
 */
 
-using System;
 using Mono.Cecil;
 
 namespace ZomboMod.Patcher
 {
     public abstract class Patch
     {
-        public void Error( string msg )
-        {
-            var tmp = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine( $"[{GetType()}] {msg}" );
-            Console.ForegroundColor = tmp;
-        }
-
-        public void Warning( string msg )
-        {
-            var tmp = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine( $"[{GetType()}] {msg}" );
-            Console.ForegroundColor = tmp;
-        }
-
-        public void Severe( string msg )
-        {
-            throw new InvalidOperationException( msg );
-        }
-
-        public abstract void Apply( ModuleDefinition mdef );
+        public ModuleDefinition UnturnedDefinition { get; internal set; }
+        
+        /*
+            Type that the methods will be injected.
+        */
+        public TypeDefinition Type { get; internal set; }
     }
 }

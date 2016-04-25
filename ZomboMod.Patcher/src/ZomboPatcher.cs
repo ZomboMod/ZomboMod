@@ -17,55 +17,309 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
-using ZomboMod.Patcher.Util;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
+using ZomboMod.Common;
 
 namespace ZomboMod.Patcher
 {
-    public class ZomboPatcher
+    /*
+        TODO:
+          Pacht behaviours
+    */
+    public sealed class ZomboPatcher2
     {
-        /*
-            Directory that patched file will be placed.
-        */
-        private const string PATCHED_DIR = @"C:\Users\Leonardo\Documents\Unturned\Zombo\All\Unturned\Unturned_Data\Managed\";
+        public static ModuleDefinition UnturnedDef { get; set; }
+        public static ModuleDefinition ZomboDef { get; set; }
+        public static ModuleDefinition PatcherDef { get; set; }
+        
+        private static readonly TokenDefinition[] Defaults = {
+            new TokenDefinition( @"([""'])(?:\\\1|.)*?\1", "QUOTED-STRING" ),
+            new TokenDefinition( @"[*<>\?\-+/A-Za-z->!]+", "SYMBOL" ),
+            new TokenDefinition( @"\s*\(\s*", "LEFT" ),
+            new TokenDefinition( @"\s*\)\s*", "RIGHT" ),
+            new TokenDefinition( @"\s*,\s*", "COMMA" )
+        };
 
-        public static void Main( string[] args )
+        private static void ExpectToken(Lexer lexer, string s) {
+            if ( lexer.Next() && lexer.Token.Equals( s ) ) return;
+            throw new Exception( $"Invalid token {lexer.Token} at {lexer.Position}. " +
+                                 $"Expected '{s}'." );
+        }
+        
+        private static void InjectMethod2(MethodDefinition mdef, string inVal, string atVal)
+        {
+            var injectAttrOfPatch = mdef.DeclaringType.CustomAttributes.First(attr =>
+                attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute")
+            );
+            var targetType = UnturnedDef.GetType((string) injectAttrOfPatch.Properties
+                                                       .First(p => p.Name.Equals("In")).Argument.Value);
+            var targetMethod = targetType.Methods.FirstOrDefault(m => m.Name.Equals(inVal));
+            var lexer = new Lexer( new StringReader( atVal ), Defaults );
+            var index = -1;
+
+            if ( !lexer.Next() ) return;
+
+            if ( !lexer.Token.Equals( "SYMBOL" ) )
+            {
+                throw new Exception( $"Invalid token {lexer.Token}('{lexer.TokenContents}') " +
+                                     $"at {lexer.Position}. Expected 'SYMBOL'" );
+            }
+
+            switch (lexer.TokenContents.ToUpperInvariant())
+            {
+                case "BEFORE":
+                case "AFTER":
+                    var at = lexer.TokenContents.ToUpperInvariant();
+
+                    ExpectToken(lexer, "LEFT");
+                    ExpectToken(lexer, "SYMBOL");
+
+                    var opCode = lexer.TokenContents;
+                    var operand = null as string;
+
+                    if (lexer.Next() && !lexer.Token.Equals( "RIGHT" ))
+                    {
+                        if (lexer.Token.Equals( "COMMA" ))
+                        {
+                            ExpectToken(lexer, "QUOTED-STRING");
+                            operand = lexer.TokenContents;
+                            operand = operand.Substring(1, operand.Length - 2);//Remove quotes
+                        }
+                        else
+                        {
+                            throw new Exception($"Invalid token {lexer.Token}('{lexer.TokenContents}') " +
+                                                $"at {lexer.Position}. Expected 'RIGHT'");
+                        }
+                    }
+                    var targetMdInstrs = targetMethod.Body.Instructions;
+                    for (int i = 0; i < targetMdInstrs.Count; i++)
+                    {
+                        var instr = targetMdInstrs[i];
+                     
+                        if (instr.OpCode.ToString().EqualsIgnoreCase(opCode) &&
+                            instr.Operand.ToString().EqualsIgnoreCase(operand))
+                        {
+                            index = (at == "AFTER" ? i : i + 1);
+                            break;
+                        }
+                    }
+                    if (index == -1)
+                    {
+                        throw new Exception($"Count not find opCode/operand ({opCode}: '{operand}')");
+                    }
+                    break;
+
+                case "START":
+                    index = 0;
+                    break;
+
+                case "END":
+                    index = targetMethod.Body.Instructions.Count - 1;
+                    break;
+
+                default:
+                    throw new Exception($"Invalid token content '{lexer.TokenContents}' " +
+                                         $"at {lexer.Position}.");
+            }
+            
+            Collection<VariableDefinition> newVars = new Collection<VariableDefinition>();
+            mdef.Body.Variables.ForEach(newVars.Add);
+            targetMethod.Body.Variables.ForEach(newVars.Add);
+            targetMethod.Body.Variables.Clear();
+            newVars.ForEach(targetMethod.Body.Variables.Add);
+            
+            targetMethod.Body.SimplifyMacros();
+            mdef.Body.Instructions.Where(c => c.OpCode != OpCodes.Nop).ForEach(c => {
+                if (c.OpCode == OpCodes.Ret)
+                {
+                    return;
+                }
+                var methodRef = c.Operand as MethodReference;
+                if (methodRef != null) 
+                {
+                    c.Operand = UnturnedDef.Import(methodRef.Resolve());
+                }
+                targetMethod.Body.Instructions.Insert( index++, c );
+            });
+            targetMethod.Body.OptimizeMacros();
+        }
+        
+        private static void Apply(TypeDefinition t)
+        {
+            Func<IMemberDefinition, CustomAttribute> getInjectAttr = memb => {
+                return t.CustomAttributes.FirstOrDefault(attr => {
+                    return attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute");
+                });
+            };
+            
+            if (getInjectAttr == null)
+            {
+                throw new Exception($"Patch '{t}' does not contains 'Inject' attribute.");
+            }
+            
+            // Search methods that have 'Inject' attribute.
+            t.Methods
+                .Where(m => m.CustomAttributes.FirstOrDefault() != null)//For some reason the .ctor pass in first Where (WTF?)
+                .ForEach(m => {
+                    var injectAttr = m.CustomAttributes.FirstOrDefault();
+                    var inProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("In"));
+                    var atProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("At"));
+                    
+                    if (inProp.Argument.Value == null)
+                        throw new Exception($"In == null at {m}");
+                    if (atProp.Argument.Value == null)
+                        throw new Exception($"At == null at {m}");
+
+                    InjectMethod2(m, (string) inProp.Argument.Value, 
+                                     (string) atProp.Argument.Value);              
+                });
+        }
+        
+        private static void Main( string[] args )
         {
             try
             {
                 Console.Title = "ZomboPatcher";
-
-                /*
-                    Change from 'bin\Debug' to 'UnturnedDlls\'
-                */
                 Directory.SetCurrentDirectory( @"..\..\UnturnedDlls\" );
 
-                var mainModule = AssemblyDefinition.ReadAssembly( "Assembly-CSharp.dll" ).MainModule;
-                var zomboCore = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.dll" );
-
-                mainModule.AssemblyReferences.Add( zomboCore.Name );
-
-                var allTypes = typeof (ZomboPatcher).Assembly.GetTypes();
+                var unturnedAsm = AssemblyDefinition.ReadAssembly( "Assembly-CSharp.dll" );
+                var zomboAsm = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.dll" );
+                var patcherAsm = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.Patcher.exe" );
                 
-                allTypes.Where( _ => typeof(Patch).IsAssignableFrom( _ ) )
-                        .Where( _ => !_.IsAbstract )
-                        .ForEach( _ => {
-                            Console.WriteLine( $"Applying patch: '{_.Name}'" );
-                            var inst = (Patch) Activator.CreateInstance( _ );
-                            inst.Apply( mainModule );
-                            Console.WriteLine( $"Applied patch: '{_.Name}'" );
-                        });
+                UnturnedDef = unturnedAsm.MainModule;
+                ZomboDef = zomboAsm.MainModule;
+                PatcherDef = patcherAsm.MainModule;
+                
+                patcherAsm.MainModule.AssemblyReferences.Add( zomboAsm.Name );
+                unturnedAsm.MainModule.AssemblyReferences.Add( zomboAsm.Name );
+                
+                var patchType = PatcherDef.GetType("ZomboMod.Patcher.Patch");
+                
+                patcherAsm.MainModule
+                    .GetAllTypes()
+                    .Where(t => !t.IsAbstract)
+                    .Where(t => t.BaseType == patchType) // TODO: recursive check ?
+                    .ForEach(Apply);
+                
 
-                Console.WriteLine( "Finished!" );
-
-                mainModule.Write( $"{PATCHED_DIR}Assembly-CSharp.dll" );
+                unturnedAsm.Write("Patched.dll");
             }
-            catch (Exception xe)
+            catch ( Exception ex )
             {
-                Console.WriteLine( xe );
+                Console.WriteLine( ex );
             }
 
             Console.ReadKey();
         }
     }
+
+    //TODO Reformat code
+    #region __LEX__
+
+    public interface IMatcher
+    {
+        int Match( string text );
+    }
+
+    internal sealed class RegexMatcher : IMatcher
+    {
+        private readonly Regex regex;
+
+        public RegexMatcher( string regex )
+        {
+            this.regex = new Regex( $"^{regex}" );
+        }
+
+        public int Match( string text )
+        {
+            var m = regex.Match( text );
+            return m.Success ? m.Length : 0;
+        }
+
+        public override string ToString()
+        {
+            return regex.ToString();
+        }
+    }
+
+    public sealed class TokenDefinition
+    {
+        public readonly IMatcher Matcher;
+        public readonly object Token;
+
+        public TokenDefinition( string regex, object token )
+        {
+            Matcher = new RegexMatcher( regex );
+            Token = token;
+        }
+    }
+
+    public sealed class Lexer : IDisposable
+    {
+        private readonly TextReader reader;
+        private readonly TokenDefinition[] tokenDefinitions;
+        private string lineRemaining;
+
+        public string TokenContents { get; private set; }
+        public object Token { get; private set; }
+        public int LineNumber { get; private set; }
+        public int Position { get; private set; }
+
+        public Lexer( TextReader reader, TokenDefinition[] tokenDefinitions )
+        {
+            this.reader = reader;
+            this.tokenDefinitions = tokenDefinitions;
+            nextLine();
+        }
+
+        public void Dispose()
+        {
+            reader.Dispose();
+        }
+
+        private void nextLine()
+        {
+            do
+            {
+                lineRemaining = reader.ReadLine();
+                ++LineNumber;
+                Position = 0;
+            }
+            while ( lineRemaining != null && lineRemaining.Length == 0 );
+        }
+
+        public bool Next()
+        {
+            if ( lineRemaining == null )
+            {
+                return false;
+            }
+
+            foreach ( var def in tokenDefinitions )
+            {
+                var matched = def.Matcher.Match( lineRemaining );
+                if ( matched <= 0 )
+                {
+                    continue;
+                }
+                Position += matched;
+                Token = def.Token;
+                TokenContents = lineRemaining.Substring( 0, matched );
+                lineRemaining = lineRemaining.Substring( matched );
+                if ( lineRemaining.Length == 0 )
+                {
+                    nextLine();
+                }
+                return true;
+            }
+
+            throw new Exception( $"Unable to match against any tokens at line " +
+                                 $"{LineNumber} position {Position} \"{lineRemaining}\"" );
+        }
+    }
+    #endregion
 }

@@ -69,6 +69,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\Patches\ProviderPatch.cs" />
+    <Compile Include="src\Patches\MiscPatches.cs" />
     <Compile Include="src\Util\Extensions.cs" />
     <Compile Include="src\Patch.cs" />
     <Compile Include="src\ZomboPatcher.cs" />

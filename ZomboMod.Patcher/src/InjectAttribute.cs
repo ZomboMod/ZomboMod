@@ -35,5 +35,12 @@ namespace ZomboMod.Patcher
         ///   END
         /// </summary>
         public string At { get; set; }
+        
+        /// <summary>
+        /// Available:
+        ///   INJECT_BODY - Inject method body.
+        ///   EXECUTE     - Just execute the method.
+        /// </summary>
+        public string Type { get; set; }
     }
 }

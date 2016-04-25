@@ -14,17 +14,37 @@
 *   
 */
 
+using System.Linq;
 using Mono.Cecil;
 
 namespace ZomboMod.Patcher
 {
     public abstract class Patch
     {
-        public ModuleDefinition UnturnedDefinition { get; internal set; }
+        public ModuleDefinition UnturnedDefinition => ZomboPatcher.UnturnedDef;
         
-        /*
-            Type that the methods will be injected.
-        */
-        public TypeDefinition Type { get; internal set; }
+        private TypeDefinition _cachedType;
+        private bool _hasType = true;
+        
+        public TypeDefinition Type 
+        { 
+            get {
+                if (_cachedType == null && _hasType)
+                {
+                    var thisType = ZomboPatcher.PatcherDef.GetType(this.GetType().FullName);
+                    var injectAttr = thisType.CustomAttributes.FirstOrDefault(attr =>
+                        attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute")
+                    );
+                    if (injectAttr == null)
+                    {
+                        _hasType = false;
+                        return null;
+                    }
+                    var inVal = (string) injectAttr.Properties.First(p => p.Name.Equals("In")).Argument.Value;
+                    _cachedType = UnturnedDefinition.GetType(inVal);
+                }
+                return _cachedType;        
+            } 
+        }
     }
 }

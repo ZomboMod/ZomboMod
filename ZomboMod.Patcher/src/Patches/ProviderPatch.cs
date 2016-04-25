@@ -30,7 +30,7 @@ namespace ZomboMod.Patcher.Patches
         }
         
         [Inject( In = "addPlayer", At = "START" )]
-        public static void OnPlayerPreAdded( SteamPlayerID playerId , Vector3 point   , byte angle                        ,
+        public void OnPlayerPreAdded( SteamPlayerID playerId , Vector3 point   , byte angle                        ,
                                              bool isPro             , bool isAdmin    , int channel     , byte face       ,
                                              byte hair              , byte beard      , Color skin      , Color color     ,
                                              bool hand              , int shirtItem   , int pantsItem   , int hatItem     ,

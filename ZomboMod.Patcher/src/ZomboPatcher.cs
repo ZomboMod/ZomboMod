@@ -26,11 +26,7 @@ using ZomboMod.Common;
 
 namespace ZomboMod.Patcher
 {
-    /*
-        TODO:
-          Pacht behaviours
-    */
-    public sealed class ZomboPatcher2
+    public sealed class ZomboPatcher
     {
         public static ModuleDefinition UnturnedDef { get; set; }
         public static ModuleDefinition ZomboDef { get; set; }
@@ -50,133 +46,145 @@ namespace ZomboMod.Patcher
                                  $"Expected '{s}'." );
         }
         
-        private static void InjectMethod2(MethodDefinition mdef, string inVal, string atVal)
+        private static void InjectMethod(MethodDefinition mdef, CustomAttribute injectAttr)
         {
-            var injectAttrOfPatch = mdef.DeclaringType.CustomAttributes.First(attr =>
-                attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute")
-            );
-            var targetType = UnturnedDef.GetType((string) injectAttrOfPatch.Properties
-                                                       .First(p => p.Name.Equals("In")).Argument.Value);
-            var targetMethod = targetType.Methods.FirstOrDefault(m => m.Name.Equals(inVal));
-            var lexer = new Lexer( new StringReader( atVal ), Defaults );
-            var index = -1;
+            var inProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("In"));
+            var atProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("At"));
+            var typeProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("Type"));
+            var typeVal = (string) typeProp.Argument.Value ?? "INJECT_BODY"; // default
 
-            if ( !lexer.Next() ) return;
-
-            if ( !lexer.Token.Equals( "SYMBOL" ) )
+            switch (typeVal)
             {
-                throw new Exception( $"Invalid token {lexer.Token}('{lexer.TokenContents}') " +
-                                     $"at {lexer.Position}. Expected 'SYMBOL'" );
-            }
-
-            switch (lexer.TokenContents.ToUpperInvariant())
-            {
-                case "BEFORE":
-                case "AFTER":
-                    var at = lexer.TokenContents.ToUpperInvariant();
-
-                    ExpectToken(lexer, "LEFT");
-                    ExpectToken(lexer, "SYMBOL");
-
-                    var opCode = lexer.TokenContents;
-                    var operand = null as string;
-
-                    if (lexer.Next() && !lexer.Token.Equals( "RIGHT" ))
-                    {
-                        if (lexer.Token.Equals( "COMMA" ))
-                        {
-                            ExpectToken(lexer, "QUOTED-STRING");
-                            operand = lexer.TokenContents;
-                            operand = operand.Substring(1, operand.Length - 2);//Remove quotes
-                        }
-                        else
-                        {
-                            throw new Exception($"Invalid token {lexer.Token}('{lexer.TokenContents}') " +
-                                                $"at {lexer.Position}. Expected 'RIGHT'");
-                        }
-                    }
-                    var targetMdInstrs = targetMethod.Body.Instructions;
-                    for (int i = 0; i < targetMdInstrs.Count; i++)
-                    {
-                        var instr = targetMdInstrs[i];
-                     
-                        if (instr.OpCode.ToString().EqualsIgnoreCase(opCode) &&
-                            instr.Operand.ToString().EqualsIgnoreCase(operand))
-                        {
-                            index = (at == "AFTER" ? i : i + 1);
-                            break;
-                        }
-                    }
-                    if (index == -1)
-                    {
-                        throw new Exception($"Count not find opCode/operand ({opCode}: '{operand}')");
-                    }
-                    break;
-
-                case "START":
-                    index = 0;
-                    break;
-
-                case "END":
-                    index = targetMethod.Body.Instructions.Count - 1;
-                    break;
-
-                default:
-                    throw new Exception($"Invalid token content '{lexer.TokenContents}' " +
-                                         $"at {lexer.Position}.");
-            }
-            
-            Collection<VariableDefinition> newVars = new Collection<VariableDefinition>();
-            mdef.Body.Variables.ForEach(newVars.Add);
-            targetMethod.Body.Variables.ForEach(newVars.Add);
-            targetMethod.Body.Variables.Clear();
-            newVars.ForEach(targetMethod.Body.Variables.Add);
-            
-            targetMethod.Body.SimplifyMacros();
-            mdef.Body.Instructions.Where(c => c.OpCode != OpCodes.Nop).ForEach(c => {
-                if (c.OpCode == OpCodes.Ret)
+                case "INJECT_BODY":
                 {
-                    return;
-                }
-                var methodRef = c.Operand as MethodReference;
-                if (methodRef != null) 
-                {
-                    c.Operand = UnturnedDef.Import(methodRef.Resolve());
-                }
-                targetMethod.Body.Instructions.Insert( index++, c );
-            });
-            targetMethod.Body.OptimizeMacros();
-        }
-        
-        private static void Apply(TypeDefinition t)
-        {
-            Func<IMemberDefinition, CustomAttribute> getInjectAttr = memb => {
-                return t.CustomAttributes.FirstOrDefault(attr => {
-                    return attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute");
-                });
-            };
-            
-            if (getInjectAttr == null)
-            {
-                throw new Exception($"Patch '{t}' does not contains 'Inject' attribute.");
-            }
-            
-            // Search methods that have 'Inject' attribute.
-            t.Methods
-                .Where(m => m.CustomAttributes.FirstOrDefault() != null)//For some reason the .ctor pass in first Where (WTF?)
-                .ForEach(m => {
-                    var injectAttr = m.CustomAttributes.FirstOrDefault();
-                    var inProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("In"));
-                    var atProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("At"));
+                    var injectAttrOfPatch = mdef.DeclaringType.CustomAttributes.FirstOrDefault(attr =>
+                        attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute")
+                    );
                     
-                    if (inProp.Argument.Value == null)
-                        throw new Exception($"In == null at {m}");
-                    if (atProp.Argument.Value == null)
-                        throw new Exception($"At == null at {m}");
+                    if (injectAttrOfPatch == null)
+                    {
+                        throw new Exception($"{mdef.DeclaringType} must have 'Inject' attribute.");
+                    }
+                    
+                    var atVal = atProp.Argument.Value as string;
+                    var inVal = inProp.Argument.Value as string;
+                    
+                    if (inVal == null)
+                    {
+                        throw new Exception($"inVal == null at {mdef}.");
+                    }
+                    if (atVal == null)
+                    {
+                        throw new Exception($"atVal == null at {mdef}.");
+                    }
+                    
+                    var targetType = UnturnedDef.GetType((string) injectAttrOfPatch.Properties
+                                                            .First(p => p.Name.Equals("In")).Argument.Value);
+                    var targetMethod = targetType.Methods.FirstOrDefault(m => m.Name.Equals(inVal));
+                    var lexer = new Lexer(new StringReader(atVal), Defaults);
+                    var index = -1;
+                    
+                    Console.WriteLine($"Injecting '{mdef.DeclaringType}::{mdef.Name}' in '{targetType}::{inVal}' at '{atVal}'");
+                    
+                    if (!lexer.Next() ) return;
 
-                    InjectMethod2(m, (string) inProp.Argument.Value, 
-                                     (string) atProp.Argument.Value);              
-                });
+                    if (!lexer.Token.Equals("SYMBOL"))
+                    {
+                        throw new Exception( $"Invalid token {lexer.Token}('{lexer.TokenContents}') " +
+                                            $"at {lexer.Position}. Expected 'SYMBOL'" );
+                    }
+
+                    switch (lexer.TokenContents.ToUpperInvariant())
+                    {
+                        case "BEFORE":
+                        case "AFTER":
+                            var at = lexer.TokenContents.ToUpperInvariant();
+
+                            ExpectToken(lexer, "LEFT");
+                            ExpectToken(lexer, "SYMBOL");
+
+                            var opCode = lexer.TokenContents;
+                            var operand = null as string;
+
+                            if (lexer.Next() && !lexer.Token.Equals( "RIGHT" ))
+                            {
+                                if (lexer.Token.Equals( "COMMA" ))
+                                {
+                                    ExpectToken(lexer, "QUOTED-STRING");
+                                    operand = lexer.TokenContents;
+                                    operand = operand.Substring(1, operand.Length - 2);//Remove quotes
+                                }
+                                else
+                                {
+                                    throw new Exception($"Invalid token {lexer.Token}('{lexer.TokenContents}') " +
+                                                        $"at {lexer.Position}. Expected 'RIGHT'");
+                                }
+                            }
+                            var targetMdInstrs = targetMethod.Body.Instructions;
+                            for (int i = 0; i < targetMdInstrs.Count; i++)
+                            {
+                                var instr = targetMdInstrs[i];
+                            
+                                if (instr.OpCode.ToString().EqualsIgnoreCase(opCode) &&
+                                    instr.Operand.ToString().EqualsIgnoreCase(operand))
+                                {
+                                    index = (at == "AFTER" ? i : i + 1);
+                                    break;
+                                }
+                            }
+                            if (index == -1)
+                            {
+                                throw new Exception($"Count not find opCode/operand ({opCode}: '{operand}')");
+                            }
+                            break;
+
+                        case "START":
+                            index = 0;
+                            break;
+
+                        case "END":
+                            index = targetMethod.Body.Instructions.Count - 1;
+                            break;
+
+                        default:
+                            throw new Exception($"Invalid token content '{lexer.TokenContents}' " +
+                                                $"at {lexer.Position}.");
+                    }
+                    
+                    Collection<VariableDefinition> newVars = new Collection<VariableDefinition>();
+                    mdef.Body.Variables.ForEach(newVars.Add);
+                    targetMethod.Body.Variables.ForEach(newVars.Add);
+                    targetMethod.Body.Variables.Clear();
+                    newVars.ForEach(targetMethod.Body.Variables.Add);
+                    
+                    targetMethod.Body.SimplifyMacros();
+                    mdef.Body.Instructions.Where(c => c.OpCode != OpCodes.Nop).ForEach(c => {
+                        if (c.OpCode == OpCodes.Ret)
+                        {
+                            return;
+                        }
+                        var methodRef = c.Operand as MethodReference;
+                        if (methodRef != null) 
+                        {
+                            c.Operand = UnturnedDef.Import(methodRef.Resolve());
+                        }
+                        targetMethod.Body.Instructions.Insert( index++, c );
+                    });
+                    targetMethod.Body.OptimizeMacros();
+                    break;
+                }
+                
+                case "EXECUTE":
+                {
+                    // Execute method via reflection
+                    System.Console.WriteLine($"Executing '{mdef.DeclaringType}::{mdef.Name}'");
+                    var currentAssembly = typeof(ZomboPatcher).Assembly;
+                    var declaringType = currentAssembly.GetType(mdef.DeclaringType.ToString());
+                    var method = declaringType.GetMethod(mdef.Name);
+                    method.Invoke(Activator.CreateInstance(declaringType), null);
+                    break;
+                }
+            }
         }
         
         private static void Main( string[] args )
@@ -203,8 +211,13 @@ namespace ZomboMod.Patcher
                     .GetAllTypes()
                     .Where(t => !t.IsAbstract)
                     .Where(t => t.BaseType == patchType) // TODO: recursive check ?
-                    .ForEach(Apply);
-                
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.CustomAttributes.FirstOrDefault() != null)//For some reason the .ctor pass in first Where (WTF?)
+                    .Where(m => m.IsPublic)
+                    .ForEach(m => {
+                        var injectAttr = m.CustomAttributes.FirstOrDefault();
+                        InjectMethod(m, injectAttr);
+                    });
 
                 unturnedAsm.Write("Patched.dll");
             }

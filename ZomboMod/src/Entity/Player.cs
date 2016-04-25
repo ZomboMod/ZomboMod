@@ -63,7 +63,7 @@ namespace ZomboMod.Entity
                 if ( value > 0xFF )
                     throw new ArgumentOutOfRangeException("virus must be between 0 and 255");
                 var bValue = (byte) value;
-                ReflectionUtil.GetField<PlayerLife>( "_virus" ).SetValue( SDGPlayer.life, bValue );
+                Reflection.GetField<PlayerLife>( "_virus" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellVirus", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
             }
         }
@@ -76,7 +76,7 @@ namespace ZomboMod.Entity
                 if ( value > 0xFF )
                     throw new ArgumentOutOfRangeException("health must be between 0 and 255");
                 var bValue = (byte) value;
-                ReflectionUtil.GetField<PlayerLife>( "_health" ).SetValue( SDGPlayer.life, bValue );
+                Reflection.GetField<PlayerLife>( "_health" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellHealth", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
             }
         }
@@ -89,7 +89,7 @@ namespace ZomboMod.Entity
                 if ( value > 0xFF )
                     throw new ArgumentOutOfRangeException("food must be between 0 and 255");
                 var bValue = (byte) value;
-                ReflectionUtil.GetField<PlayerLife>( "_food" ).SetValue( SDGPlayer.life, bValue );
+                Reflection.GetField<PlayerLife>( "_food" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellFood", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
             }
         }
@@ -102,7 +102,7 @@ namespace ZomboMod.Entity
                 if ( value > 0xFF )
                     throw new ArgumentOutOfRangeException("water must be between 0 and 255");
                 var bValue = (byte) value;
-                ReflectionUtil.GetField<PlayerLife>( "_water" ).SetValue( SDGPlayer.life, bValue );
+                Reflection.GetField<PlayerLife>( "_water" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellWater", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
             }
         }
@@ -118,7 +118,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.skills.experience; }
             set
             {
-                ReflectionUtil.GetField<PlayerSkills>( "_experience" ).SetValue( SDGPlayer.skills, value ); ;
+                Reflection.GetField<PlayerSkills>( "_experience" ).SetValue( SDGPlayer.skills, value ); ;
                 Channel.send( "tellExperience", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value );
             }
         }
@@ -263,7 +263,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.life.isBleeding; }
             set 
             {
-                ReflectionUtil.GetField<PlayerLife>( "_isBleeding" ).SetValue( SDGPlayer.life, value );
+                Reflection.GetField<PlayerLife>( "_isBleeding" ).SetValue( SDGPlayer.life, value );
                 Channel.send( "tellBleeding", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value ); 
             }
         }
@@ -273,7 +273,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.life.isBroken; }
             set 
             {
-                ReflectionUtil.GetField<PlayerLife>( "_isBroken" ).SetValue( SDGPlayer.life, value );
+                Reflection.GetField<PlayerLife>( "_isBroken" ).SetValue( SDGPlayer.life, value );
                 Channel.send( "tellBroken", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, value ); 
             }
         }

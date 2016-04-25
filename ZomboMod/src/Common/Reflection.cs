@@ -4,7 +4,7 @@ using static System.Reflection.BindingFlags;
 
 namespace ZomboMod.Common
 {
-    public static class ReflectionUtil
+    public static class Reflection
     {
         public static FieldInfo GetField<T>( string fieldName )
         {

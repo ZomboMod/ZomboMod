@@ -178,7 +178,7 @@ namespace ZomboMod.Patcher
                 case "EXECUTE":
                 {
                     // Execute method via reflection
-                    System.Console.WriteLine($"Executing '{mdef.DeclaringType}::{mdef.Name}'");
+                    Console.WriteLine($"Executing '{mdef.DeclaringType}::{mdef.Name}'");
                     var currentAssembly = typeof(ZomboPatcher).Assembly;
                     var declaringType = currentAssembly.GetType(mdef.DeclaringType.ToString());
                     var method = declaringType.GetMethod(mdef.Name);

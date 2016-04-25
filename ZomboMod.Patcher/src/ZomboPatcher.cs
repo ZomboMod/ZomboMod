@@ -40,7 +40,8 @@ namespace ZomboMod.Patcher
             new TokenDefinition( @"\s*,\s*", "COMMA" )
         };
 
-        private static void ExpectToken(Lexer lexer, string s) {
+        private static void ExpectToken(Lexer lexer, string s) 
+        {
             if ( lexer.Next() && lexer.Token.Equals( s ) ) return;
             throw new Exception( $"Invalid token {lexer.Token} at {lexer.Position}. " +
                                  $"Expected '{s}'." );

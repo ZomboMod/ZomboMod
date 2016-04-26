@@ -53,6 +53,10 @@
       <HintPath>UnturnedDlls\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>UnturnedDlls\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>UnturnedDlls\UnityEngine.dll</HintPath>
       <Private>False</Private>

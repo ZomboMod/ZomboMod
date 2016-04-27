@@ -44,9 +44,6 @@ namespace ZomboMod.Core
             Provider.onServerDisconnected += OnPlayerDisconnected;
         }
 
-        /**
-           Injected in Provider::addPlayer 
-        */
         public static void OnPlayerPreAdded( SteamPlayerID playerId, ref Vector3 point   , ref byte angle                     ,
                                              ref bool isPro        , ref bool isAdmin    , ref int channel  , ref byte face   ,
                                              ref byte hair         , ref byte beard      , ref Color skin   , ref Color color ,
@@ -57,9 +54,6 @@ namespace ZomboMod.Core
             Console.WriteLine( playerId );
         }
 
-        /**
-           Injected in Provider::addPlayer 
-        */
         public static void OnPlayerAdded( SteamPlayer player )
         {
             Zombo.Server.ConnectedPlayers.Add( player.playerID.steamID.m_SteamID, new Entity.Player( player ) );

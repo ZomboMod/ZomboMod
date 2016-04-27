@@ -58,18 +58,18 @@ namespace ZomboMod.Patcher.Patches
             var index = -1;
             CurrentMethod.Body.Variables.Add( varDef );
             
-            for ( var i = 0; i < instrs.Count; i++ )
+            for (var i = 0; i < instrs.Count; i++)
             {
-                if ( instrs[i].OpCode == Ldarg_S &&
-                     instrs[i].Operand.ToString() == "skillset" &&
-                     instrs[i + 1].OpCode == Newobj &&
-                     instrs[i + 1].Operand.ToString().Contains( "SteamPlayer::.ctor" ) )
+                if (instrs[i].OpCode == Ldarg_S &&
+                    instrs[i].Operand.ToString() == "skillset" &&
+                    instrs[i + 1].OpCode == Newobj &&
+                    instrs[i + 1].Operand.ToString().Contains("SteamPlayer::.ctor"))
                 {
                     index = i + 1;
                 }
             }
 
-            if ( index != -1 )
+            if (index != -1)
             {
                 var localSteamPlayerVar = CurrentMethod.Body.Variables.LastOrDefault();
 
@@ -82,7 +82,7 @@ namespace ZomboMod.Patcher.Patches
             }
             else
             {
-                Console.WriteLine( "index == -1" );
+                Console.WriteLine("index == -1");
             }
         }
     }

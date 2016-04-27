@@ -120,6 +120,7 @@ namespace ZomboMod
             Server.Name = Settings.Server.Name;
             Server.Password = Settings.Server.Password;
             Server.Timeout = Settings.Server.Timeout;
+            Server.EnableCheats = Settings.Server.EnableCheats;
 
             // TODO LOGGER
             Console.WriteLine();
@@ -131,6 +132,7 @@ namespace ZomboMod
             Console.WriteLine( "Name: {0}", Server.Name );
             Console.WriteLine( "Password: {0}", string.IsNullOrEmpty( Server.Password ) ? "None" : Server.Password );
             Console.WriteLine( "Timeout: {0}", Server.Timeout );
+            Console.WriteLine( "Cheats: {0}", Server.EnableCheats ? "Enabled" : "Disabled" );
             Console.WriteLine();
 
             PermissionProvider = new PermissionProvider();
@@ -225,6 +227,7 @@ namespace ZomboMod
                 Password = string.Empty,
                 Map = "PEI",
                 EnablePvp = true,
+                EnableCheats = true,
                 Port = 27015,
                 MaxPlayers = 32,
                 Timeout = .75f
@@ -234,6 +237,7 @@ namespace ZomboMod
         public struct ServerSettings
         {
             public bool EnablePvp;
+            public bool EnableCheats;
             public ushort Port;
             public byte MaxPlayers;
             public float Timeout;

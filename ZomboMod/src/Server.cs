@@ -66,6 +66,12 @@ namespace ZomboMod
             get { return Provider.isPvP; }
             set { Provider.isPvP = value; }
         }
+        
+        public bool EnableCheats
+        {
+            get { return Provider.hasCheats; }
+            set { Provider.hasCheats = value; }
+        }
 
         public EGameMode GameMode
         {

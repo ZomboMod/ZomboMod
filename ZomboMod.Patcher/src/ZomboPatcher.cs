@@ -82,6 +82,7 @@ namespace ZomboMod.Patcher
             switch (typeVal)
             {
                 case "INJECT_BODY":
+                case "REPLACE_BODY":
                 {
                     if (injectAttrOfPatch == null)
                     {
@@ -185,15 +186,20 @@ namespace ZomboMod.Patcher
                     targetMethod.Body.Variables.Clear();
                     newVars.ForEach(targetMethod.Body.Variables.Add);
 
+                    if (typeVal.Equals("REPLACE_BODY"))
+                    {
+                        targetMethod.Body.Instructions.Clear();
+                    }
+
                     targetMethod.Body.SimplifyMacros();
                     var instructions = mdef.Body.Instructions.Where(c => c.OpCode != OpCodes.Nop).ToList();
+                    if (mdef.ReturnType.ToString().Contains("System.Void")) 
+                    {
+                        instructions = instructions.Take(instructions.Count - 1).ToList();;
+                    }
                     for (int i = 0; i < instructions.Count; i++)
                     {
                         var cur = instructions[i];
-                        if (cur.OpCode == OpCodes.Ret)
-                        {
-                            continue;
-                        }
                         if (cur.OpCode == OpCodes.Ldstr &&
                            instructions[i + 1].Operand.ToString().Contains("Patch::Emit(System.String)"))
                         {
@@ -311,7 +317,8 @@ namespace ZomboMod.Patcher
                     }
                     rawOpCode = rawOpCode?.Trim();
                     rawOperand = rawOperand?.Trim();
-                    OpCode? opCode = (OpCode) opCodesType.GetField(rawOpCode, fieldFlags)?.GetValue(null);
+                    var val = opCodesType.GetField(rawOpCode, fieldFlags)?.GetValue(null);
+                    OpCode? opCode = val == null ? (OpCode?) null : (OpCode) val;
 
                     if (!opCode.HasValue)
                         throw new Exception($"Invalid opcode '{rawOpCode}'");
@@ -353,7 +360,7 @@ namespace ZomboMod.Patcher
                         if (type == null)
                             throw new Exception($"Method not found '{rawMethod}'");
 
-                        instructions.Add(Instruction.Create(OpCodes.Call, method));
+                        instructions.Add(Instruction.Create(OpCodes.Call, method.Resolve()));
                     }
                     else
                     {

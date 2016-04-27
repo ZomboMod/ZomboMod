@@ -38,8 +38,9 @@ namespace ZomboMod.Patcher
         
         /// <summary>
         /// Available:
-        ///   INJECT_BODY - Inject method body.
-        ///   EXECUTE     - Just execute the method.
+        ///   REPLACE_BODY - Replace all instructions.
+        ///   INJECT_BODY  - Inject method body.
+        ///   EXECUTE      - Just execute the method.
         /// </summary>
         public string Type { get; set; }
     }

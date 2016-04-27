@@ -27,12 +27,12 @@ namespace ZomboMod.Plugin
         NONE                   = 0,
 
         /// <summary>
-        /// Dynamically register all commands in Module.
+        /// Dynamically register all commands in Plugin.
         /// </summary>
         AUTO_REGISTER_COMMANDS = 1 << 0,
 
         /// <summary>
-        /// Dynamically register all events (handlers) in Module.
+        /// Dynamically register all events (handlers) in Plugin.
         /// </summary>
         AUTO_REGISTER_EVENTS   = 1 << 1
     }

@@ -142,7 +142,7 @@ namespace ZomboMod.Patcher
                                 if (op.EqualsIgnoreCase(operand)) 
                                     return true;
                                 if (operand.StartsWith("%ct"))
-                                    return op.ContainsIgnoreCase(operand);
+                                    return op.ContainsIgnoreCase(operand.Substring(3));
                                 return false;
                             };
                             var targetMdInstrs = targetMethod.Body.Instructions;

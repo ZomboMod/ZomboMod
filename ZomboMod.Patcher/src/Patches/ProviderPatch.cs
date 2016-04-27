@@ -42,7 +42,7 @@ namespace ZomboMod.Patcher.Patches
                                        ref backpackItem, ref vestItem, ref maskItem, ref glassesItem, ref skinItems, ref skillset );
         }
         
-        [Inject(Type = "EXECUTE", In = "addPlayer", At = "%SDG.Unturned.SteamPlayer::.ctor")]
+        [Inject(Type = "EXECUTE", In = "addPlayer")]
         public void OnPlayerAdded() 
         {
         }

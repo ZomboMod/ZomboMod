@@ -30,16 +30,16 @@ namespace ZomboMod.Patcher.Patches
         }
         
         [Inject( In = "addPlayer", At = "START" )]
-        public void OnPlayerPreAdded(SteamPlayerID playerId , Vector3 point   , byte angle                        ,
-                                     bool isPro             , bool isAdmin    , int channel     , byte face       ,
-                                     byte hair              , byte beard      , Color skin      , Color color     ,
-                                     bool hand              , int shirtItem   , int pantsItem   , int hatItem     ,
-                                     int backpackItem       , int vestItem    , int maskItem                      , 
-                                     int glassesItem        , int[] skinItems , EPlayerSkillset skillset          )
+        public static void OnPlayerPreAdded(SteamPlayerID playerId , Vector3 point   , byte angle                        ,
+                                            bool isPro             , bool isAdmin    , int channel     , byte face       ,
+                                            byte hair              , byte beard      , Color skin      , Color color     ,
+                                            bool hand              , int shirtItem   , int pantsItem   , int hatItem     ,
+                                            int backpackItem       , int vestItem    , int maskItem                      , 
+                                            int glassesItem        , int[] skinItems , EPlayerSkillset skillset          )     
         {
-            //ZomboCore.OnPlayerPreAdded(playerId, ref point, ref angle, ref isPro, ref isAdmin, ref channel, ref face, ref hair,
-            //                           ref beard, ref skin, ref color, ref hand, ref shirtItem, ref pantsItem, ref hatItem, 
-            //                           ref backpackItem, ref vestItem, ref maskItem, ref glassesItem, ref skinItems, ref skillset );
+            ZomboCore.OnPlayerPreAdded(playerId, ref point, ref angle, ref isPro, ref isAdmin, ref channel, ref face, ref hair,
+                                       ref beard, ref skin, ref color, ref hand, ref shirtItem, ref pantsItem, ref hatItem, 
+                                       ref backpackItem, ref vestItem, ref maskItem, ref glassesItem, ref skinItems, ref skillset );
         }
     }
 }

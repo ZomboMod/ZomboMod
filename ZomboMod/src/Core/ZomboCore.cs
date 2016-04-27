@@ -73,8 +73,7 @@ namespace ZomboMod.Core
         public static void OnPlayerDamaged( ref byte amount   , ref Vector3 newRagdoll , ref EDeathCause newCause , 
                                             ref ELimb newLimb , ref CSteamID newKiller )
         {
-            Console.WriteLine( amount + " " + newCause );
-            amount = 0;
+            Console.WriteLine( amount + " " + newCause ); // Working perfectly
         }
     }
 }

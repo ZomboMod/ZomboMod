@@ -159,7 +159,7 @@ namespace ZomboMod
         {
             var player = Zombo.Server.OnlinePlayers.FirstOrDefault();
             
-            Console.WriteLine(Zombo.Server.OnlinePlayers);
+            Console.WriteLine(Zombo.Server.OnlinePlayers.Count());
         }
     }
 

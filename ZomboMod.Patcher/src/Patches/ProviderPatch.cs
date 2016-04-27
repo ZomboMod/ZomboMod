@@ -14,9 +14,16 @@
 *   
 */
 
+using System;
+using System.Linq;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using SDG.Unturned;
 using UnityEngine;
 using ZomboMod.Core;
+
+using static Mono.Cecil.Cil.Instruction;
+using static Mono.Cecil.Cil.OpCodes;
 
 namespace ZomboMod.Patcher.Patches
 {
@@ -45,7 +52,38 @@ namespace ZomboMod.Patcher.Patches
         [Inject(Type = "EXECUTE", In = "addPlayer")]
         public void OnPlayerAdded() 
         {
-            System.Console.WriteLine(CurrentMethod);
+            var callbackMd = UnturnedDefinition.Import(typeof(ZomboCore).GetMethod("OnPlayerAdded"));
+            var varDef = new VariableDefinition( "steamPlayer", UnturnedDefinition.GetType("SDG.Unturned.SteamPlayer"));
+            var instrs = base.CurrentMethod.Body.Instructions;
+            var index = -1;
+            CurrentMethod.Body.Variables.Add( varDef );
+            
+            for ( var i = 0; i < instrs.Count; i++ )
+            {
+                if ( instrs[i].OpCode == Ldarg_S &&
+                     instrs[i].Operand.ToString() == "skillset" &&
+                     instrs[i + 1].OpCode == Newobj &&
+                     instrs[i + 1].Operand.ToString().Contains( "SteamPlayer::.ctor" ) )
+                {
+                    index = i + 1;
+                }
+            }
+
+            if ( index != -1 )
+            {
+                var localSteamPlayerVar = CurrentMethod.Body.Variables.LastOrDefault();
+
+                CurrentMethod.Body.SimplifyMacros();
+                CurrentMethod.Body.Instructions.Insert(++index, Create(Stloc_S, localSteamPlayerVar));
+                CurrentMethod.Body.Instructions.Insert(++index, Create(Ldloc_S, localSteamPlayerVar));
+                CurrentMethod.Body.Instructions.Insert(++index, Create(Call, callbackMd));
+                CurrentMethod.Body.Instructions.Insert(++index, Create(Ldloc_S, localSteamPlayerVar));
+                CurrentMethod.Body.OptimizeMacros();
+            }
+            else
+            {
+                Console.WriteLine( "index == -1" );
+            }
         }
     }
 }

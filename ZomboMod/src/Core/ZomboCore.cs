@@ -70,10 +70,10 @@ namespace ZomboMod.Core
             Zombo.Server.ConnectedPlayers.Remove( id.m_SteamID );
         }
         
-        public static void OnPlayerDamaged( ref byte amount   , ref Vector3 newRagdoll , ref EDeathCause newCause , 
+        public static void OnPlayerDamaged( Player player, ref byte amount   , ref Vector3 newRagdoll , ref EDeathCause newCause , 
                                             ref ELimb newLimb , ref CSteamID newKiller )
         {
-            Console.WriteLine( amount + " " + newCause ); // Working perfectly
+            Console.WriteLine( player + " " + amount + " " + newCause ); // Working perfectly
         }
     }
 }

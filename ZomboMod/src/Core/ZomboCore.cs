@@ -47,13 +47,12 @@ namespace ZomboMod.Core
         /**
            Injected in Provider::addPlayer 
         */
-        public static void OnPlayerPreAdded( SteamPlayerID playerId, ref Vector3 point   , ref byte angle                     ,
-                                             ref bool isPro        , ref bool isAdmin    , ref int channel  , ref byte face   ,
-                                             ref byte hair         , ref byte beard      , ref Color skin   , ref Color color ,
-                                             ref bool hand         , ref int shirtItem   , ref int pantsItem, ref int hatItem ,
-                                             ref int backpackItem  , ref int vestItem    , ref int maskiTEM                   , 
-                                             ref int glassesItem   , ref int[] skinItems , ref EPlayerSkillset skillset       ,
-                                             ref bool isAnonymous                                                             )
+        public static void OnPlayerPreAdded(SteamPlayerID playerId, ref Vector3 point   , ref byte angle                     ,
+                                            ref bool isPro        , ref bool isAdmin    , ref int channel  , ref byte face   ,
+                                            ref byte hair         , ref byte beard      , ref Color skin   , ref Color color ,
+                                            ref bool hand         , ref int shirtItem   , ref int pantsItem, ref int hatItem ,
+                                            ref int backpackItem  , ref int vestItem    , ref int maskiTEM                   , 
+                                            ref int glassesItem   , ref int[] skinItems , ref EPlayerSkillset skillset       )
         {
             Console.WriteLine( playerId );
         }
@@ -69,6 +68,13 @@ namespace ZomboMod.Core
         public static void OnPlayerDisconnected( CSteamID id )
         {
             Zombo.Server.ConnectedPlayers.Remove( id.m_SteamID );
+        }
+        
+        public static void OnPlayerDamaged( ref byte amount   , ref Vector3 newRagdoll , ref EDeathCause newCause , 
+                                            ref ELimb newLimb , ref CSteamID newKiller )
+        {
+            Console.WriteLine( amount + " " + newCause );
+            amount = 0;
         }
     }
 }

@@ -221,6 +221,7 @@ namespace ZomboMod.Patcher
                     });
 
                 unturnedAsm.Write("Patched.dll");
+                unturnedAsm.Write(@"C:\Users\Leonardo\Documents\Unturned\Zombo\All\Unturned\Unturned_Data\Managed\Assembly-CSharp.dll");
             }
             catch ( Exception ex )
             {

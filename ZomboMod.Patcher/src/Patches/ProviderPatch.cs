@@ -23,13 +23,13 @@ namespace ZomboMod.Patcher.Patches
     [Inject( In = "SDG.Unturned.Provider" )]
     public sealed class ProviderPatch : Patch
     {
-        [Inject( In = "Awake", At = "BEFORE(Call, 'System.Void SDG.Unturned.SteamAdminlist::load()')" )]
-        public void Init()
+        [Inject(In = "Awake", At = "BEFORE(Call, 'System.Void SDG.Unturned.SteamAdminlist::load()')")]
+        public void InitCore()
         {
             ZomboCore.PreInit();
         }
         
-        [Inject( In = "addPlayer", At = "START" )]
+        [Inject(In = "addPlayer", At = "START")]
         public static void OnPlayerPreAdded(SteamPlayerID playerId , Vector3 point   , byte angle                        ,
                                             bool isPro             , bool isAdmin    , int channel     , byte face       ,
                                             byte hair              , byte beard      , Color skin      , Color color     ,
@@ -40,6 +40,11 @@ namespace ZomboMod.Patcher.Patches
             ZomboCore.OnPlayerPreAdded(playerId, ref point, ref angle, ref isPro, ref isAdmin, ref channel, ref face, ref hair,
                                        ref beard, ref skin, ref color, ref hand, ref shirtItem, ref pantsItem, ref hatItem, 
                                        ref backpackItem, ref vestItem, ref maskItem, ref glassesItem, ref skinItems, ref skillset );
+        }
+        
+        [Inject(Type = "EXECUTE", In = "addPlayer", At = "%SDG.Unturned.SteamPlayer::.ctor")]
+        public void OnPlayerAdded() 
+        {
         }
     }
 }

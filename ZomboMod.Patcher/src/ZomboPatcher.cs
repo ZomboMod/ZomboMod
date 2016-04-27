@@ -31,7 +31,9 @@ namespace ZomboMod.Patcher
         public static ModuleDefinition UnturnedDef { get; set; }
         public static ModuleDefinition ZomboDef { get; set; }
         public static ModuleDefinition PatcherDef { get; set; }
-        
+
+        private static Patch _currentPatchInst;
+
         private static readonly TokenDefinition[] Defaults = {
             new TokenDefinition( @"([""'])(?:\\\1|.)*?\1", "QUOTED-STRING" ),
             new TokenDefinition( @"[*<>\?\-+/A-Za-z->!]+", "SYMBOL" ),
@@ -54,22 +56,35 @@ namespace ZomboMod.Patcher
             var typeProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("Type"));
             var typeVal = (string) typeProp.Argument.Value ?? "INJECT_BODY"; // default
 
+            var atVal = atProp.Argument.Value as string;
+            var inVal = inProp.Argument.Value as string;
+
+            var injectAttrOfPatch = mdef.DeclaringType.CustomAttributes.FirstOrDefault(attr =>
+                attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute")
+            );
+            var targetType = null as TypeDefinition;
+            var targetMethod = null as MethodDefinition;
+
+            if (injectAttrOfPatch != null)
+            {
+                targetType = UnturnedDef.GetType((string) injectAttrOfPatch.Properties
+                                               .First(p => p.Name.Equals("In")).Argument.Value);
+            }
+            if (inVal != null && targetType != null)
+            {
+                targetMethod = targetType.Methods.FirstOrDefault(m => m.Name.Equals(inVal));
+                _currentPatchInst.CurrentMethod = targetMethod;
+            }
+
             switch (typeVal)
             {
                 case "INJECT_BODY":
                 {
-                    var injectAttrOfPatch = mdef.DeclaringType.CustomAttributes.FirstOrDefault(attr =>
-                        attr.AttributeType.ToString().Equals("ZomboMod.Patcher.InjectAttribute")
-                    );
-                    
                     if (injectAttrOfPatch == null)
                     {
                         throw new Exception($"{mdef.DeclaringType} must have 'Inject' attribute.");
                     }
-                    
-                    var atVal = atProp.Argument.Value as string;
-                    var inVal = inProp.Argument.Value as string;
-                    
+
                     if (inVal == null)
                     {
                         throw new Exception($"inVal == null at {mdef}.");
@@ -78,10 +93,7 @@ namespace ZomboMod.Patcher
                     {
                         throw new Exception($"atVal == null at {mdef}.");
                     }
-                    
-                    var targetType = UnturnedDef.GetType((string) injectAttrOfPatch.Properties
-                                                            .First(p => p.Name.Equals("In")).Argument.Value);
-                    var targetMethod = targetType.Methods.FirstOrDefault(m => m.Name.Equals(inVal));
+
                     var lexer = new Lexer(new StringReader(atVal), Defaults);
                     var index = -1;
                     
@@ -121,13 +133,25 @@ namespace ZomboMod.Patcher
                                                         $"at {lexer.Position}. Expected 'RIGHT'");
                                 }
                             }
+                            /*
+                                %ct = contains
+                                %sw = startsWith (TODO?)
+                                %ew = endsWith (TODO?)
+                            */
+                            Func<String, bool> checkOperand = op => {
+                                if (op.EqualsIgnoreCase(operand)) 
+                                    return true;
+                                if (operand.StartsWith("%ct"))
+                                    return op.ContainsIgnoreCase(operand);
+                                return false;
+                            };
                             var targetMdInstrs = targetMethod.Body.Instructions;
                             for (int i = 0; i < targetMdInstrs.Count; i++)
                             {
                                 var instr = targetMdInstrs[i];
                             
-                                if (instr.OpCode.ToString().EqualsIgnoreCase(opCode) &&
-                                    instr.Operand.ToString().EqualsIgnoreCase(operand))
+                                if (instr.OpCode.ToString().EqualsIgnoreCase(opCode) && 
+                                    checkOperand(instr.Operand.ToString()))
                                 {
                                     index = (at == "AFTER" ? i : i + 1);
                                     break;
@@ -182,7 +206,7 @@ namespace ZomboMod.Patcher
                     var currentAssembly = typeof(ZomboPatcher).Assembly;
                     var declaringType = currentAssembly.GetType(mdef.DeclaringType.ToString());
                     var method = declaringType.GetMethod(mdef.Name);
-                    method.Invoke(Activator.CreateInstance(declaringType), null);
+                    method.Invoke(_currentPatchInst, null);
                     break;
                 }
             }
@@ -212,7 +236,11 @@ namespace ZomboMod.Patcher
                     .GetAllTypes()
                     .Where(t => !t.IsAbstract)
                     .Where(t => t.BaseType == patchType) // TODO: recursive check ?
-                    .SelectMany(t => t.Methods)
+                    .SelectMany(t => {
+                        var type = typeof(ZomboPatcher).Assembly.GetType(t.FullName);
+                        _currentPatchInst = (Patch) Activator.CreateInstance(type);
+                        return t.Methods;
+                    })
                     .Where(m => m.CustomAttributes.FirstOrDefault() != null)//For some reason the .ctor pass in first Where (WTF?)
                     .Where(m => m.IsPublic)
                     .ForEach(m => {

@@ -158,6 +158,8 @@ namespace ZomboMod
         protected override void execute( CSteamID executorID, string parameter )
         {
             var player = Zombo.Server.OnlinePlayers.FirstOrDefault();
+            
+            Console.WriteLine(Zombo.Server.OnlinePlayers);
         }
     }
 

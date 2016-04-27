@@ -44,8 +44,11 @@ namespace ZomboMod.Patcher
                     var inVal = (string) injectAttr.Properties.First(p => p.Name.Equals("In")).Argument.Value;
                     _cachedType = UnturnedDefinition.GetType(inVal);
                 }
-                return _cachedType;        
+                return _cachedType;
             } 
         }
+        
+        
+        public MethodDefinition CurrentMethod { get; internal set; }
     }
 }

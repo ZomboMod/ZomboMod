@@ -188,7 +188,7 @@ namespace ZomboMod.Patcher
             }
         }
         
-        private static void Main( string[] args )
+        private static void Main(string[] args)
         {
             try
             {
@@ -237,21 +237,21 @@ namespace ZomboMod.Patcher
 
     public interface IMatcher
     {
-        int Match( string text );
+        int Match(string text);
     }
 
     internal sealed class RegexMatcher : IMatcher
     {
         private readonly Regex regex;
 
-        public RegexMatcher( string regex )
+        public RegexMatcher(string regex)
         {
-            this.regex = new Regex( $"^{regex}" );
+            this.regex = new Regex($"^{regex}");
         }
 
-        public int Match( string text )
+        public int Match(string text)
         {
-            var m = regex.Match( text );
+            var m = regex.Match(text);
             return m.Success ? m.Length : 0;
         }
 
@@ -266,9 +266,9 @@ namespace ZomboMod.Patcher
         public readonly IMatcher Matcher;
         public readonly object Token;
 
-        public TokenDefinition( string regex, object token )
+        public TokenDefinition(string regex, object token)
         {
-            Matcher = new RegexMatcher( regex );
+            Matcher = new RegexMatcher(regex);
             Token = token;
         }
     }
@@ -284,7 +284,7 @@ namespace ZomboMod.Patcher
         public int LineNumber { get; private set; }
         public int Position { get; private set; }
 
-        public Lexer( TextReader reader, TokenDefinition[] tokenDefinitions )
+        public Lexer(TextReader reader, TokenDefinition[] tokenDefinitions)
         {
             this.reader = reader;
             this.tokenDefinitions = tokenDefinitions;
@@ -304,36 +304,36 @@ namespace ZomboMod.Patcher
                 ++LineNumber;
                 Position = 0;
             }
-            while ( lineRemaining != null && lineRemaining.Length == 0 );
+            while (lineRemaining != null && lineRemaining.Length == 0);
         }
 
         public bool Next()
         {
-            if ( lineRemaining == null )
+            if (lineRemaining == null)
             {
                 return false;
             }
 
-            foreach ( var def in tokenDefinitions )
+            foreach (var def in tokenDefinitions)
             {
-                var matched = def.Matcher.Match( lineRemaining );
-                if ( matched <= 0 )
+                var matched = def.Matcher.Match(lineRemaining);
+                if (matched <= 0)
                 {
                     continue;
                 }
                 Position += matched;
                 Token = def.Token;
-                TokenContents = lineRemaining.Substring( 0, matched );
-                lineRemaining = lineRemaining.Substring( matched );
-                if ( lineRemaining.Length == 0 )
+                TokenContents = lineRemaining.Substring(0, matched);
+                lineRemaining = lineRemaining.Substring(matched);
+                if (lineRemaining.Length == 0)
                 {
                     nextLine();
                 }
                 return true;
             }
 
-            throw new Exception( $"Unable to match against any tokens at line " +
-                                 $"{LineNumber} position {Position} \"{lineRemaining}\"" );
+            throw new Exception($"Unable to match against any tokens at line " +
+                                $"{LineNumber} position {Position} \"{lineRemaining}\"");
         }
     }
     #endregion

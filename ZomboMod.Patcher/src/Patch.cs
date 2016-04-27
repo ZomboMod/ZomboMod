@@ -19,7 +19,7 @@ using Mono.Cecil;
 
 namespace ZomboMod.Patcher
 {
-    public abstract class  Patch
+    public abstract class Patch
     {
         public ModuleDefinition UnturnedDefinition => ZomboPatcher.UnturnedDef;
         public MethodDefinition CurrentMethod { get; internal set; }

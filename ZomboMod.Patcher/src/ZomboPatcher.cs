@@ -249,11 +249,7 @@ namespace ZomboMod.Patcher
                 UnturnedDef = unturnedAssembly.MainModule;
                 ZomboDef = zomboAssembly.MainModule;
                 PatcherDef = patcherAssembly.MainModule;
-                // Parse(@"
-                //    Ldarg_0;
-                //    Call, [unturned] SDG.Unturned.PlayerCaller::get_player();
-                //");
-                //return;
+
                 patcherAssembly.MainModule.AssemblyReferences.Add( zomboAssembly.Name );
                 unturnedAssembly.MainModule.AssemblyReferences.Add( zomboAssembly.Name );
 

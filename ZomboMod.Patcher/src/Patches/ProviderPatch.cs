@@ -45,6 +45,7 @@ namespace ZomboMod.Patcher.Patches
         [Inject(Type = "EXECUTE", In = "addPlayer")]
         public void OnPlayerAdded() 
         {
+            System.Console.WriteLine(CurrentMethod);
         }
     }
 }

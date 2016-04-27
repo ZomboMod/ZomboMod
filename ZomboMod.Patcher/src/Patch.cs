@@ -22,6 +22,7 @@ namespace ZomboMod.Patcher
     public abstract class Patch
     {
         public ModuleDefinition UnturnedDefinition => ZomboPatcher.UnturnedDef;
+        public MethodDefinition CurrentMethod { get; internal set; }
         
         private TypeDefinition _cachedType;
         private bool _hasType = true;
@@ -48,7 +49,16 @@ namespace ZomboMod.Patcher
             } 
         }
         
+        protected MethodDefinition GetMethod(string type, string methodName) 
+        {
+            type = type.Replace("{u}", "SDG.Unturned");
+            return UnturnedDefinition.GetType(type).Methods.FirstOrDefault(md => md.Name.Equals(methodName));
+        }
         
-        public MethodDefinition CurrentMethod { get; internal set; }
+        protected FieldDefinition GetField(string type, string fieldName) 
+        {
+            type = type.Replace("{u}", "SDG.Unturned");
+            return UnturnedDefinition.GetType(type).Fields.FirstOrDefault(fl => fl.Name.Equals(fieldName));
+        }
     }
 }

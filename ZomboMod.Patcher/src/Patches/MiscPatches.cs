@@ -38,9 +38,9 @@ namespace ZomboMod.Patcher.Patches
             };
 
             fields.ForEach(f => {
-                var vehicleManagerField = UnturnedDefinition.GetField( $"SDG.Unturned.{f[0]}", f[1] );
-                vehicleManagerField.IsPrivate = false;
-                vehicleManagerField.IsPublic = true;
+                var field = GetField( $"{{u}}.{f[0]}", f[1] );
+                field.IsPrivate = false;
+                field.IsPublic = true;
             });
         }
     }

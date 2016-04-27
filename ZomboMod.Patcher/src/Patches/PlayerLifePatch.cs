@@ -40,12 +40,10 @@ namespace ZomboMod.Patcher.Patches
         [Inject(Type = "EXECUTE", In = "askDamage")]
         public void OnPlayerDamaged2()
         {
-            var get_playerMd = UnturnedDefinition.GetType("SDG.Unturned.PlayerCaller")
-                               .Methods.First(md => md.Name.Equals("get_player"));
             CurrentMethod.Body.SimplifyMacros();
             CurrentMethod.Body.Instructions.Insert(0, Create(Ldarg_0));
             CurrentMethod.Body.OptimizeMacros();
-            CurrentMethod.Body.Instructions[1] = Create(Call, get_playerMd); // Replace ldnull
+            CurrentMethod.Body.Instructions[1] = Create(Call, GetMethod("{u}.PlayerCaller", "get_player")); // Replace ldnull
         }
     }
 }

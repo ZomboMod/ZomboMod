@@ -29,6 +29,7 @@ namespace ZomboMod.Patcher.Patches
         public void OnPlayerDamaged(byte amount, Vector3 newRagdoll, EDeathCause newCause,
                                     ELimb newLimb, CSteamID newKiller)
         {
+            // Load 'base.player' into stack
             Emit(@"
                 Ldarg_0;
                 Call, [unturned] SDG.Unturned.PlayerCaller::get_player();

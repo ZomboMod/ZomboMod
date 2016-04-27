@@ -19,7 +19,7 @@ using Mono.Cecil;
 
 namespace ZomboMod.Patcher
 {
-    public abstract class Patch
+    public abstract class   Patch
     {
         public ModuleDefinition UnturnedDefinition => ZomboPatcher.UnturnedDef;
         public MethodDefinition CurrentMethod { get; internal set; }
@@ -60,5 +60,17 @@ namespace ZomboMod.Patcher
             type = type.Replace("{u}", "SDG.Unturned");
             return UnturnedDefinition.GetType(type).Fields.FirstOrDefault(fl => fl.Name.Equals(fieldName));
         }
+
+        /// <summary>
+        /// Used by patcher.
+        /// Emit instructions.
+        /// </summary>
+        protected static void Emit(string il) {}
+
+        /// <summary>
+        /// Used by patcher.
+        /// Skip next instruction.
+        /// </summary>
+        protected static void SkipNext() {}
     }
 }

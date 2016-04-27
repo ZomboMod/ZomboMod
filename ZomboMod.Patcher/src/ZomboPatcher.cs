@@ -1,5 +1,5 @@
 ﻿/*
-*    ______               _             __  __           _ 
+*    ______               _             __  __           _
 *   |___  /              | |           |  \/  |         | |
 *      / / ___  _ __ ___ | |__   ___   | \  / | ___   __| |
 *     / / / _ \| '_ ` _ \| '_ \ / _ \  | |\/| |/ _ \ / _` |
@@ -11,12 +11,15 @@
 *
 *             Copyright (C) 2016 Leonardosnt
 *          ZomboMod is licensed under CC BY-NC-SA.
-*   
+*
 */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -42,13 +45,13 @@ namespace ZomboMod.Patcher
             new TokenDefinition( @"\s*,\s*", "COMMA" )
         };
 
-        private static void ExpectToken(Lexer lexer, string s) 
+        private static void ExpectToken(Lexer lexer, string s)
         {
             if ( lexer.Next() && lexer.Token.Equals( s ) ) return;
             throw new Exception( $"Invalid token {lexer.Token} at {lexer.Position}. " +
                                  $"Expected '{s}'." );
         }
-        
+
         private static void InjectMethod(MethodDefinition mdef, CustomAttribute injectAttr)
         {
             var inProp = injectAttr.Properties.FirstOrDefault(p => p.Name.Equals("In"));
@@ -96,9 +99,9 @@ namespace ZomboMod.Patcher
 
                     var lexer = new Lexer(new StringReader(atVal), Defaults);
                     var index = -1;
-                    
+
                     Console.WriteLine($"Injecting '{mdef.DeclaringType}::{mdef.Name}' in '{targetType}::{inVal}' at '{atVal}'");
-                    
+
                     if (!lexer.Next() ) return;
 
                     if (!lexer.Token.Equals("SYMBOL"))
@@ -139,7 +142,7 @@ namespace ZomboMod.Patcher
                                 %ew = endsWith (TODO?)
                             */
                             Func<String, bool> checkOperand = op => {
-                                if (op.EqualsIgnoreCase(operand)) 
+                                if (op.EqualsIgnoreCase(operand))
                                     return true;
                                 if (operand.StartsWith("%ct"))
                                     return op.ContainsIgnoreCase(operand.Substring(3));
@@ -149,8 +152,8 @@ namespace ZomboMod.Patcher
                             for (int i = 0; i < targetMdInstrs.Count; i++)
                             {
                                 var instr = targetMdInstrs[i];
-                            
-                                if (instr.OpCode.ToString().EqualsIgnoreCase(opCode) && 
+
+                                if (instr.OpCode.ToString().EqualsIgnoreCase(opCode) &&
                                     checkOperand(instr.Operand.ToString()))
                                 {
                                     index = (at == "AFTER" ? i : i + 1);
@@ -175,30 +178,49 @@ namespace ZomboMod.Patcher
                             throw new Exception($"Invalid token content '{lexer.TokenContents}' " +
                                                 $"at {lexer.Position}.");
                     }
-                    
+
                     Collection<VariableDefinition> newVars = new Collection<VariableDefinition>();
                     mdef.Body.Variables.ForEach(newVars.Add);
                     targetMethod.Body.Variables.ForEach(newVars.Add);
                     targetMethod.Body.Variables.Clear();
                     newVars.ForEach(targetMethod.Body.Variables.Add);
-                    
+
                     targetMethod.Body.SimplifyMacros();
-                    mdef.Body.Instructions.Where(c => c.OpCode != OpCodes.Nop).ForEach(c => {
-                        if (c.OpCode == OpCodes.Ret)
+                    var instructions = mdef.Body.Instructions.Where(c => c.OpCode != OpCodes.Nop).ToList();
+                    for (int i = 0; i < instructions.Count; i++)
+                    {
+                        var cur = instructions[i];
+                        if (cur.OpCode == OpCodes.Ret)
                         {
-                            return;
+                            continue;
                         }
-                        var methodRef = c.Operand as MethodReference;
-                        if (methodRef != null) 
+                        if (cur.OpCode == OpCodes.Ldstr &&
+                           instructions[i + 1].Operand.ToString().Contains("Patch::Emit(System.String)"))
                         {
-                            c.Operand = UnturnedDef.Import(methodRef.Resolve());
+                            var rawInstr = (string) cur.Operand;
+                            Parse(rawInstr).ForEach(ii => {
+                                targetMethod.Body.Instructions.Insert(index++, ii);
+                            });
+                            i += 1; // skip call Emit()
+                            continue;
                         }
-                        targetMethod.Body.Instructions.Insert( index++, c );
-                    });
+                        if (cur.OpCode == OpCodes.Call &&
+                            cur.Operand.ToString().Contains("Patch::SkipNext()"))
+                        {
+                            i+= 1;
+                            continue;
+                        }
+                        var methodRef = cur.Operand as MethodReference;
+                        if (methodRef != null)
+                        {
+                            cur.Operand = UnturnedDef.Import(methodRef.Resolve());
+                        }
+                        targetMethod.Body.Instructions.Insert(index++, cur);
+                    }
                     targetMethod.Body.OptimizeMacros();
                     break;
                 }
-                
+
                 case "EXECUTE":
                 {
                     // Execute method via reflection
@@ -211,28 +233,33 @@ namespace ZomboMod.Patcher
                 }
             }
         }
-        
+
         private static void Main(string[] args)
         {
             try
             {
+
                 Console.Title = "ZomboPatcher";
                 Directory.SetCurrentDirectory( @"..\..\UnturnedDlls\" );
 
-                var unturnedAsm = AssemblyDefinition.ReadAssembly( "Assembly-CSharp.dll" );
-                var zomboAsm = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.dll" );
-                var patcherAsm = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.Patcher.exe" );
-                
-                UnturnedDef = unturnedAsm.MainModule;
-                ZomboDef = zomboAsm.MainModule;
-                PatcherDef = patcherAsm.MainModule;
-                
-                patcherAsm.MainModule.AssemblyReferences.Add( zomboAsm.Name );
-                unturnedAsm.MainModule.AssemblyReferences.Add( zomboAsm.Name );
-                
+                var unturnedAssembly = AssemblyDefinition.ReadAssembly( "Assembly-CSharp.dll" );
+                var zomboAssembly = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.dll" );
+                var patcherAssembly = AssemblyDefinition.ReadAssembly( @"..\bin\Debug\ZomboMod.Patcher.exe" );
+
+                UnturnedDef = unturnedAssembly.MainModule;
+                ZomboDef = zomboAssembly.MainModule;
+                PatcherDef = patcherAssembly.MainModule;
+                // Parse(@"
+                //    Ldarg_0;
+                //    Call, [unturned] SDG.Unturned.PlayerCaller::get_player();
+                //");
+                //return;
+                patcherAssembly.MainModule.AssemblyReferences.Add( zomboAssembly.Name );
+                unturnedAssembly.MainModule.AssemblyReferences.Add( zomboAssembly.Name );
+
                 var patchType = PatcherDef.GetType("ZomboMod.Patcher.Patch");
-                
-                patcherAsm.MainModule
+
+                patcherAssembly.MainModule
                     .GetAllTypes()
                     .Where(t => !t.IsAbstract)
                     .Where(t => t.BaseType == patchType) // TODO: recursive check ?
@@ -248,9 +275,9 @@ namespace ZomboMod.Patcher
                         InjectMethod(m, injectAttr);
                     });
 
-                unturnedAsm.Write("Patched.dll");
-                unturnedAsm.Write(@"C:\Users\Leonardo\Documents\Unturned\Zombo\All\Unturned\Unturned_Data\Managed\Assembly-CSharp.dll");
-                
+                unturnedAssembly.Write("Patched.dll");
+                unturnedAssembly.Write(@"C:\Users\Leonardo\Documents\Unturned\Zombo\All\Unturned\Unturned_Data\Managed\Assembly-CSharp.dll");
+
                 //TODO: Programmatically copy all UnturnedDlls to Debug folder to avoid errors.
             }
             catch ( Exception ex )
@@ -259,6 +286,85 @@ namespace ZomboMod.Patcher
             }
 
             Console.ReadKey();
+        }
+
+        //TODO: Implement on demand
+        public static Instruction[] Parse(string raw)
+        {
+            var instructions = new List<Instruction>();
+            var opCodesType = typeof(OpCodes);
+            var fieldFlags = BindingFlags.Public | BindingFlags.Static;
+            var rawInstructions = new Dictionary<string, string>();
+            var opCodeBuilder = new StringBuilder();
+            var operandBuilder = new StringBuilder();
+
+            raw.Split(';')
+               .Select(r => r.Trim())
+               .Where(r => !string.IsNullOrEmpty(r))
+               .ForEach(r => {
+                    var rawOpCode = null as string;
+                    var rawOperand = null as string;
+                    if (r.Contains(','))
+                    {
+                        rawOpCode = r.Substring(0, r.IndexOf(','));
+                        rawOperand = r.Substring(r.IndexOf(',') + 1);
+                    }
+                    else
+                    {
+                        rawOpCode = r;
+                    }
+                    rawOpCode = rawOpCode?.Trim();
+                    rawOperand = rawOperand?.Trim();
+                    OpCode? opCode = (OpCode) opCodesType.GetField(rawOpCode, fieldFlags)?.GetValue(null);
+
+                    if (!opCode.HasValue)
+                        throw new Exception($"Invalid opcode '{rawOpCode}'");
+                    var opCodeVal = opCode.Value;
+
+                    if (opCodeVal == OpCodes.Call)
+                    {
+                        var targetModule = null as ModuleDefinition;
+
+                        if (rawOperand == null)
+                            throw new Exception($"[Call] Operand == null");
+
+                        if (rawOperand.StartsWith("[unturned]"))
+                        {
+                            rawOperand = rawOperand.Substring(10).Trim();
+                            targetModule = UnturnedDef;
+                        }
+                        else if (rawOperand.StartsWith("[zombo]"))
+                        {
+                            rawOperand = rawOperand.Substring(8).Trim();
+                            targetModule = ZomboDef;
+                        }
+
+                        var rawMethodParts = rawOperand.Split(new string[] { "::" },
+                                                              StringSplitOptions.None);
+                        var rawType = rawMethodParts[0];
+                        var rawMethod = rawMethodParts[1];
+
+                        // Ignore parameters for now
+                        if (rawMethod.EndsWith("()"))
+                            rawMethod = rawMethod.Substring(0, rawMethod.Length - 2);
+
+                        var type = targetModule.GetType(rawType);
+
+                        if (type == null)
+                            throw new Exception($"Type not found '{rawType}'");
+                        var method = type.Methods.FirstOrDefault(md => md.Name.Equals(rawMethod));
+
+                        if (type == null)
+                            throw new Exception($"Method not found '{rawMethod}'");
+
+                        instructions.Add(Instruction.Create(OpCodes.Call, method));
+                    }
+                    else
+                    {
+                        instructions.Add(Instruction.Create(opCodeVal));
+                    }
+                });
+            return instructions.ToArray();
         }
     }
 

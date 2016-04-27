@@ -60,7 +60,7 @@ namespace ZomboMod.Patcher.Patches
             
             for ( var i = 0; i < instrs.Count; i++ )
             {
-                if ( instrs[i].OpCode == Ldarg_S &&
+                if ( instrs[i].OpCode == Ldarg &&
                      instrs[i].Operand.ToString() == "skillset" &&
                      instrs[i + 1].OpCode == Newobj &&
                      instrs[i + 1].Operand.ToString().Contains( "SteamPlayer::.ctor" ) )

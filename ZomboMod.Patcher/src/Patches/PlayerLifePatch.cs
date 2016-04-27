@@ -14,36 +14,27 @@
 *   
 */
 
-using System.Linq;
-using Mono.Cecil.Rocks;
 using SDG.Unturned;
 using Steamworks;
 using UnityEngine;
 using ZomboMod.Core;
-
-using static Mono.Cecil.Cil.Instruction;
-using static Mono.Cecil.Cil.OpCodes;
 
 namespace ZomboMod.Patcher.Patches
 {
     [Inject(In = "SDG.Unturned.PlayerLife")]
     public sealed class PlayerLifePatch : Patch
     {
+        
         [Inject(In = "askDamage", At = "START")]
-        public void OnPlayerDamaged(byte amount   , Vector3 newRagdoll , EDeathCause newCause , 
-                                    ELimb newLimb , CSteamID newKiller)
+        public void OnPlayerDamaged(byte amount, Vector3 newRagdoll, EDeathCause newCause,
+                                    ELimb newLimb, CSteamID newKiller)
         {
-            ZomboCore.OnPlayerDamaged( null, ref amount, ref newRagdoll, ref newCause, ref newLimb, ref newKiller );
-        }
-
-        // TODO: workaround, just for now
-        [Inject(Type = "EXECUTE", In = "askDamage")]
-        public void OnPlayerDamaged2()
-        {
-            CurrentMethod.Body.SimplifyMacros();
-            CurrentMethod.Body.Instructions.Insert(0, Create(Ldarg_0));
-            CurrentMethod.Body.OptimizeMacros();
-            CurrentMethod.Body.Instructions[1] = Create(Call, GetMethod("{u}.PlayerCaller", "get_player")); // Replace ldnull
+            Emit(@"
+                Ldarg_0;
+                Call, [unturned] SDG.Unturned.PlayerCaller::get_player();
+            ");
+            SkipNext(); // Skip Ldnull vv
+            ZomboCore.OnPlayerDamaged(null, ref amount, ref newRagdoll, ref newCause, ref newLimb, ref newKiller);
         }
     }
 }

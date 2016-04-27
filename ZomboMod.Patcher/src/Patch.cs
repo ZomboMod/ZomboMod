@@ -28,7 +28,8 @@ namespace ZomboMod.Patcher
         
         public TypeDefinition Type 
         { 
-            get {
+            get 
+            {
                 if (_cachedType == null && _hasType)
                 {
                     var thisType = ZomboPatcher.PatcherDef.GetType(this.GetType().FullName);

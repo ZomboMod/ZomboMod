@@ -27,7 +27,7 @@ using static Mono.Cecil.Cil.OpCodes;
 
 namespace ZomboMod.Patcher.Patches
 {
-    [Inject( In = "SDG.Unturned.Provider" )]
+    [Inject(In = "SDG.Unturned.Provider")]
     public sealed class ProviderPatch : Patch
     {
         [Inject(In = "Awake", At = "BEFORE(Call, 'System.Void SDG.Unturned.SteamAdminlist::load()')")]

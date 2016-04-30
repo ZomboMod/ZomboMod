@@ -15,12 +15,9 @@
 */
 
 using System;
-using System.Linq;
 using Mono.Cecil.Cil;
 using SDG.Unturned;
-using Steamworks;
 using ZomboMod.Core;
-using ZomboMod.Patcher.Util;
 
 namespace ZomboMod.Patcher.Patches
 {
@@ -65,7 +62,7 @@ namespace ZomboMod.Patcher.Patches
         [Inject(In = "askChat", At = "START")]
         public void LoadDefaultColor()
         {
-            // Load Color.White in "color" variable.
+            // Load "Color.White" in "color" variable.
             Emit(@"
                 Call, [unityengine] UnityEngine.Color::get_white();
                 Stloc_2;
@@ -86,7 +83,8 @@ namespace ZomboMod.Patcher.Patches
                         IL_0142: stloc.2
                         IL_0143: ldloc.0
                         IL_0144: ldfld System.Boolean SDG.Unturned.SteamPlayer::isAdmin
-                        
+
+
                         Color aDMIN = Color.white;
                         if (steamPlayer.isAdmin)
                         {

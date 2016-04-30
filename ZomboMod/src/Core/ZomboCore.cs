@@ -31,7 +31,10 @@ namespace ZomboMod.Core
     / /_| (_) | | | | | | |_) | (_) | | |  | | (_) | (_| |
    /_____\___/|_| |_| |_|_.__/ \___/  |_|  |_|\___/ \__,_|
                                                           
+               v1.0.0 for Unturned 3.14.15.0              
+                                                          
 ";
+
         public static void PreInit()
         {
             Console.Clear();
@@ -63,13 +66,18 @@ namespace ZomboMod.Core
         {
             Zombo.Server.ConnectedPlayers.Remove( id.m_SteamID );
         }
-        
+
         public static void OnPlayerDamaged( Player player, ref byte amount, ref Vector3 newRagdoll, 
                                             ref EDeathCause newCause, ref ELimb newLimb, ref CSteamID newKiller )
         {
-            Console.WriteLine( player + " " + amount + " " + newCause ); // Working perfectly
+            Console.WriteLine( player + " " + amount + " " + newCause );
         }
-        
+
+        public static void OnPlayerChatted( CSteamID playerId, ref Color color, ref byte mode, ref string text )
+        {
+            Console.WriteLine("Chatted " + playerId + " " + mode + " " + text );
+        }
+
         public static bool ProcessChat( SteamPlayer player, string text )
         {
             if (!text.StartsWith("/"))

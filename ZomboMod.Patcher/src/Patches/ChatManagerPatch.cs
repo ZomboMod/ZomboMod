@@ -33,6 +33,18 @@ namespace ZomboMod.Patcher.Patches
             return ZomboCore.ProcessChat(player, text);
         }
 
+        /*
+            Search for
+                IL_0006: call bool SDG.Unturned.Provider::get_isServer()
+                IL_000b: brfalse IL_02bf
+
+                IL_0010: ldarg.1
+
+
+                if (Provider.isServer)
+                {
+                    ...
+        */
         [Inject(In = "askChat", At = "PATTERN(2, BEFORE, call, '%ctSDG.Unturned.Provider::get_isServer()', brfalse, '%any', ldarg_1, '')")]
         public void InjectPlayerChatted()
         {

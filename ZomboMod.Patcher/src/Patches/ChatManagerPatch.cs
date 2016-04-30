@@ -48,6 +48,11 @@ namespace ZomboMod.Patcher.Patches
         [Inject(In = "askChat", At = "PATTERN(2, BEFORE, call, '%ctSDG.Unturned.Provider::get_isServer()', brfalse, '%any', ldarg_1, '')")]
         public void InjectPlayerChatted()
         {
+            // Load reference of "steamID" parameter onto the stack.
+            // Load local variable "color" onto the stack.
+            // Load reference of "mode" parameter onto the stack.
+            // Load reference of "text" parameter onto the stack.
+            // Call ZomboCore::OnPlayerChatted()
             Emit(@"
                 Ldarg_1;
                 Ldloca_S, 2;

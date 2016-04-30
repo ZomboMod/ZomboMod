@@ -36,13 +36,13 @@ namespace ZomboMod.Patcher.Patches
         [Inject(In = "askChat", At = "PATTERN(2, BEFORE, call, '%ctSDG.Unturned.Provider::get_isServer()', brfalse, '%any', ldarg_1, '')")]
         public void InjectPlayerChatted()
         {
-           Emit(@"
-            Ldarg_1;
-            Ldloca_S, 2;
-            Ldarga_S, 1;
-            Ldarga_S, 2;
-            Call, [zombo] ZomboMod.Core.ZomboCore::OnPlayerChatted();
-           ");
+            Emit(@"
+                Ldarg_1;
+                Ldloca_S, 2;
+                Ldarga_S, 1;
+                Ldarga_S, 2;
+                Call, [zombo] ZomboMod.Core.ZomboCore::OnPlayerChatted();
+            ");
         }
 
         [Inject(In = "askChat", At = "START")]

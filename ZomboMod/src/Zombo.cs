@@ -147,8 +147,7 @@ namespace ZomboMod
     }
 
     /*
-        TODO:
-         just for test
+        TODO: Remove
     */
     public class TestCommand : Command
     {
@@ -233,7 +232,21 @@ namespace ZomboMod
                 Timeout = .75f
             };
         }
-
+        
+        private static bool TryParseEnum<T>( string raw, out T ret )
+        {
+            try
+            {
+                ret =  (T) Enum.Parse( typeof(T), raw, true );
+                return true;
+            }
+            catch (Exception)
+            {
+                ret = default(T);
+                return false;
+            }
+        }
+        
         public struct ServerSettings
         {
             public bool EnablePvp;
@@ -253,22 +266,6 @@ namespace ZomboMod
 
             [JsonConverter( typeof( StringEnumConverter ) )]
             public ESteamSecurity Security;
-        }
-
-
-        // TODO: move
-        private static bool TryParseEnum<T>( string raw, out T ret )
-        {
-            try
-            {
-                ret =  (T) Enum.Parse( typeof (T), raw, true );
-                return true;
-            }
-            catch (Exception)
-            {
-                ret = default(T);
-                return false;
-            }
         }
     }
 }

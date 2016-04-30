@@ -49,7 +49,7 @@ namespace ZomboMod.Patcher.Patches
         public void InjectPlayerChatted()
         {
             // Load reference of "steamID" parameter onto the stack.
-            // Load local variable "color" onto the stack.
+            // Load reference of "color" variable onto the stack.
             // Load reference of "mode" parameter onto the stack.
             // Load reference of "text" parameter onto the stack.
             // Call ZomboCore::OnPlayerChatted()

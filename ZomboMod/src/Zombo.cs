@@ -22,6 +22,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using SDG.Unturned;
 using Steamworks;
+using ZomboMod.Common;
 using ZomboMod.Configuration;
 using ZomboMod.Permission;
 using ZomboMod.Permission.Internal;
@@ -180,17 +181,17 @@ namespace ZomboMod
                 ECameraMode camera;
                 int maxPlayers, port;
                 
-                if ( !TryParseEnum( json["Server"]["GameMode"]?.ToString(), out gamemode ) || gamemode == EGameMode.ANY )
+                if ( !MiscUtil.TryParseEnum( json["Server"]["GameMode"]?.ToString(), out gamemode ) || gamemode == EGameMode.ANY )
                 {
                     throw new ArgumentException( $"Invalid GameMode '{json["GameMode"]}'. Expected 'EASY, NORMAL, HARD or PRO'." );
                 }
                 
-                if ( !TryParseEnum( json["Server"]["Security"]?.ToString(), out security ) )
+                if ( !MiscUtil.TryParseEnum( json["Server"]["Security"]?.ToString(), out security ) )
                 {
                     throw new ArgumentException( $"Invalid Security '{json["Security"]}'. Expected 'SECURE, INSECURE or LAN'." );
                 }
                 
-                if ( !TryParseEnum( json["Server"]["CameraMode"]?.ToString(), out camera ) || camera == ECameraMode.ANY )
+                if ( !MiscUtil.TryParseEnum( json["Server"]["CameraMode"]?.ToString(), out camera ) || camera == ECameraMode.ANY )
                 {
                     throw new ArgumentException( $"Invalid CameraMode '{json["CameraMode"]}'. Expected 'FIRST, THIRD or BOTH'." );
                 }
@@ -231,20 +232,6 @@ namespace ZomboMod
                 MaxPlayers = 32,
                 Timeout = .75f
             };
-        }
-        
-        private static bool TryParseEnum<T>( string raw, out T ret )
-        {
-            try
-            {
-                ret =  (T) Enum.Parse( typeof(T), raw, true );
-                return true;
-            }
-            catch (Exception)
-            {
-                ret = default(T);
-                return false;
-            }
         }
         
         public struct ServerSettings

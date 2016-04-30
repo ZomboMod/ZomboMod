@@ -29,9 +29,23 @@ namespace ZomboMod.Patcher
 
         /// <summary>
         /// Available:
+        ///   Will search for given Operand & Opcode, if found it will injected before.
         ///   BEFORE(OpCode, 'Operand')
+        ///
+        ///   Will search for given Operand & Opcode, if found it will injected after.
         ///   AFTER(OpCode, 'Operand')
+        ///
+        ///   Will search for an pattern of OpCodes & Operands, and will inject
+        ///   before the given OpCode/Operand index.
+        ///   For Example:
+        ///       PATTERN(1, Ldarg_0, '', Ldarg_1, '', Call, 'some::method')
+        ///   He will inject BEFORE or AFTER "Ldarg_1, ''"
+        ///   PATTERN(index, BEFORE|AFTER, [OpCode, 'Operand' ...])
+        ///   
+        ///   Will inject at start of method body.
         ///   START
+        ///
+        ///   Will inject at end of method body.
         ///   END
         /// </summary>
         public string At { get; set; }

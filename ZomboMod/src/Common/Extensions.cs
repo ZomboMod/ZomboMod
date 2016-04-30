@@ -37,11 +37,26 @@ namespace ZomboMod.Common
             foreach ( var obj in set ) act( obj );
         }
 
+        public static string ArrayToString<T>( this T[] arr )
+        {
+            return MiscUtil.ArrayToString( arr );
+        }
+
+
         public static V GetOrDefault<K, V>( this Dictionary<K, V> dict, K key, V def )
         {
             V value;
             return dict.TryGetValue( key, out value ) ? value : def;
         }
+
+        public static void PutOrUpdate<K, V>( this Dictionary<K, V> dict, K key, V val )
+        {
+            if ( dict.ContainsKey( key ) )
+                dict[key] = val;
+            else
+                dict.Add( key, val );
+        }
+
 
         public static bool ContainsIgnoreCase( this string str, string part )
         {
@@ -51,6 +66,21 @@ namespace ZomboMod.Common
         public static bool EqualsIgnoreCase( this string str, string str2 )
         {
             return string.Compare( str, str2, StringComparison.InvariantCultureIgnoreCase ) == 0;
+        }
+        
+        public static bool IsNullOrEmpty( this string str )
+        {
+            return string.IsNullOrEmpty( str );
+        }
+
+        public static string Capitalize( this string str )
+        {
+            return CultureInfo.InvariantCulture.TextInfo.ToTitleCase( str.ToLowerInvariant() );
+        }
+        
+        public static string Format( this string str, params object[] args ) 
+        {
+            return string.Format( str, args );   
         }
     }
 }

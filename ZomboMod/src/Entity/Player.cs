@@ -23,6 +23,7 @@ using ZomboMod.Common;
 using ZomboMod.Permission;
 using SDGPlayer = SDG.Unturned.Player;
 using SteamUser = ZomboMod.Steam.SteamUser;
+
 namespace ZomboMod.Entity
 {
     public class Player : IEntity, ILivingEntity, IPermissible
@@ -48,7 +49,13 @@ namespace ZomboMod.Entity
         {
             get { return SteamPlayer.isPro; }
         }
-        
+
+        public bool IsAdmin
+        {
+            get { return SteamPlayer.isAdmin; }
+            set { SteamPlayer.isAdmin = value; }
+        }
+
         public EPlayerTemperature Temperature
         {
             get { return SDGPlayer.life.temperature; }
@@ -60,8 +67,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.life.virus; }
             set
             {
-                if ( value > 0xFF )
-                    throw new ArgumentOutOfRangeException("virus must be between 0 and 255");
+                if ( value > 0xFF ) value = 0xFF;
                 var bValue = (byte) value;
                 Reflection.GetField<PlayerLife>( "_virus" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellVirus", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
@@ -73,8 +79,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.life.health; }
             set
             {
-                if ( value > 0xFF )
-                    throw new ArgumentOutOfRangeException("health must be between 0 and 255");
+                if (value > 0xFF) value = 0xFF;
                 var bValue = (byte) value;
                 Reflection.GetField<PlayerLife>( "_health" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellHealth", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
@@ -86,8 +91,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.life.food; }
             set
             {
-                if ( value > 0xFF )
-                    throw new ArgumentOutOfRangeException("food must be between 0 and 255");
+                if (value > 0xFF) value = 0xFF;
                 var bValue = (byte) value;
                 Reflection.GetField<PlayerLife>( "_food" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellFood", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
@@ -99,8 +103,7 @@ namespace ZomboMod.Entity
             get { return SDGPlayer.life.water; }
             set
             {
-                if ( value > 0xFF )
-                    throw new ArgumentOutOfRangeException("water must be between 0 and 255");
+                if (value > 0xFF) value = 0xFF;
                 var bValue = (byte) value;
                 Reflection.GetField<PlayerLife>( "_water" ).SetValue( SDGPlayer.life, bValue );
                 Channel.send( "tellWater", ESteamCall.OWNER, ESteamPacket.UPDATE_RELIABLE_BUFFER, bValue ); 
@@ -227,12 +230,6 @@ namespace ZomboMod.Entity
             set;
         }
 
-        public bool IsAdmin
-        {
-            get { return SteamPlayer.isAdmin; }
-            set { SteamPlayer.isAdmin = value; }
-        }
-
         public PlayerInventory Inventory
         {
             get { return SDGPlayer.inventory; }
@@ -348,9 +345,12 @@ namespace ZomboMod.Entity
 
         public void SendMessage( params string[] messages )
         {
-            messages.ForEach( msg => {
-                ChatManager.say( SteamUser.SteamID, msg, Color.green );
-            });
+            messages.ForEach( m => SendMessage( m, Color.green ) );
+        }
+
+        public void SendMessage( string message, Color color, EChatMode mode = EChatMode.GLOBAL )
+        {
+            ChatManager.say( SteamUser.SteamID, message, color, mode );
         }
 
         /// <summary>
@@ -359,18 +359,18 @@ namespace ZomboMod.Entity
         /// <param name="messages">Messages to say</param>
         public void Chat( params string[] messages )
         {
-            Chat( EChatMode.GLOBAL, messages );
+            messages.ForEach( m => Chat( m, EChatMode.GLOBAL ) );
         }
 
         /// <summary>
         /// Make player say something on chat.
         /// </summary>
-        /// <param name="messages">Messages to say</param>
-        /// <param name="chatMode">ChatMode</param>
-        /// <see cref="EChatMode"/>
-        public void Chat( EChatMode chatMode, params string[] messages )
+        /// <param name="message"></param>
+        /// <param name="mode"></param>
+        public void Chat( string message, EChatMode mode )
         {
-            throw new NotImplementedException();
+            var cm = Reflection.GetField<ChatManager>("manager").GetValue(null) as ChatManager;
+            cm.askChat( SteamUser.SteamID, (byte) mode, message );
         }
 
         public void Suicide()
@@ -403,7 +403,7 @@ namespace ZomboMod.Entity
 
         void IEntity.Remove()
         {
-            throw new NotSupportedException( "Cannot use IEntity::remove on Player, use Player::Kick instead." );
+            Kick("Removed");
         }
 
         internal Player( SteamPlayer handle )

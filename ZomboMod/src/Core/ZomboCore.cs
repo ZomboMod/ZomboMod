@@ -47,6 +47,24 @@ namespace ZomboMod.Core
             Provider.onServerDisconnected += OnPlayerDisconnected;
         }
 
+        //TODO: process commands
+        public static bool ProcessChat( SteamPlayer player, string text )
+        {
+            if (!text.StartsWith("/"))
+            {
+                return true;
+            }
+            if (player.isAdmin)
+            {
+                Commander.execute(player.playerID.steamID, text.Substring(1));
+            }
+            return false;
+        }
+
+
+        /*
+            Event handling
+        */
         public static void OnPlayerPreAdded( SteamPlayerID playerId, ref Vector3 point   , ref byte angle                     ,
                                              ref bool isPro        , ref bool isAdmin    , ref int channel  , ref byte face   ,
                                              ref byte hair         , ref byte beard      , ref Color skin   , ref Color color ,
@@ -76,19 +94,6 @@ namespace ZomboMod.Core
         public static void OnPlayerChatted( CSteamID playerId, ref Color color, ref byte mode, ref string text )
         {
             Console.WriteLine("Chatted " + playerId + " " + mode + " " + text );
-        }
-
-        public static bool ProcessChat( SteamPlayer player, string text )
-        {
-            if (!text.StartsWith("/"))
-            {
-                return true;
-            }
-            if (player.isAdmin)
-            {
-                Commander.execute(player.playerID.steamID, text.Substring(1));
-            }
-            return false;
         }
     }
 }
